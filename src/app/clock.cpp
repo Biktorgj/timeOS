@@ -6,17 +6,49 @@
 #include "clock.h"
 
 Clock::Clock() {
-  hh = 0;
-  mm = 0;
-  ss = 0;
+
 }
 
-void Clock::drawClock(Adafruit_ST7789 tft,int hh, int mm, int ss) {
-      tft.setCursor(0, 150);
-      //tft.println("00:00:00");
-      tft.print(hh);
-      tft.print(":");
-      tft.print(mm);
-      tft.print(":");
-      tft.print(ss);
+void Clock::drawClock(Adafruit_ST7789 *tft,System *sys) {
+  DateTimeArray datetime = sys->getCurrentTime();
+    tft->setTextSize(2);
+    tft->setTextColor(0xFFFF);
+
+      tft->setCursor(60, 100);
+
+      // Date
+      if (datetime.dd < 10) {
+        tft->print("0");
+      }
+      tft->print(datetime.dd);
+      tft->print("/");
+      if (datetime.mm < 10) {
+        tft->print("0");
+      }
+      tft->print(datetime.mm);
+      tft->print("/");
+      if (datetime.yy < 10) {
+        tft->print("000");
+      }
+      tft->println(datetime.yy);
+
+      // Time
+      tft->setCursor(60, 120);
+      if (datetime.hh < 10) {
+        tft->print("0");
+      }
+      tft->print(datetime.hh);
+      tft->print(":");
+      if (datetime.ii < 10) {
+        tft->print("0");
+      }
+      tft->print(datetime.ii);
+      tft->print(":");
+      if (datetime.ss < 10) {
+        tft->print("0");
+      }
+      tft->println(datetime.ss);
+      tft->setCursor(60, 140);
+
+      tft->println("CLOCK");
 }
