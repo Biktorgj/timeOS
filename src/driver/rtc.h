@@ -1,33 +1,37 @@
-/*
-static unsigned irq_counter = 0;
-boolean LD = false;
+#include <nrf.h>
 
-void RTC0_IRQHandler(void) {
-  irq_counter++;
-  if (irq_counter % 8 == 0) {
-    LD = !LD;
-    digitalWrite(9, false);
-  }
-  NRF_RTC0->EVENTS_TICK = 0UL;
-}
+#define RTC NRF_RTC0
+#define RTC_IRQ RTC0_IRQn
 
-void stopRTC() {
-  NRF_RTC0->TASKS_STOP = 0UL;
-}
-void setRTC() {
-  //stop to set options
-  stopRTC();
-
-  NVIC_SetPriority(RTC0_IRQn, 15);
-  NVIC_ClearPendingIRQ(RTC0_IRQn);
-  NVIC_EnableIRQ(RTC0_IRQn);
-
-  NRF_CLOCK->LFCLKSRC = (uint32_t)((CLOCK_LFCLKSRC_SRC_RC << CLOCK_LFCLKSRC_SRC_Pos) & CLOCK_LFCLKSRC_SRC_Msk);
-  NRF_CLOCK->TASKS_LFCLKSTART = 1UL;
-
-  NRF_RTC0->PRESCALER = (1<<12) -1;
-  NRF_RTC0->EVTENSET = offsetof(NRF_RTC_Type, EVENTS_TICK);
-  NRF_RTC0->INTENSET = offsetof(NRF_RTC_Type, EVENTS_TICK);
-  NRF_RTC0->TASKS_START = 1UL;
-}
+/**
+* Reset events and read back on nRF52
+* http://infocenter.nordicsemi.com/pdf/nRF52_Series_Migration_v1.0.pdf
 */
+#if __CORTEX_M == 0x04
+#define NRF5_RESET_EVENT(event)                                                 \
+event = 0;                                                                   \
+(void)event
+#else
+#define NRF5_RESET_EVENT(event) event = 0
+#endif
+
+// This must be in one line
+extern "C" {
+  void RTC0_IRQHandler(void) {
+    NRF5_RESET_EVENT(RTC->EVENTS_COMPARE[0]);
+    //unsigned long currentTick = millis();
+    //if (currentTick - appRuntime.prevTick >= 500) {
+    //  appRuntime.prevTick = currentTick;
+      appRuntime.ss++;
+      if (appRuntime.ss >= 60) {
+        appRuntime.mm++;
+        appRuntime.ss = 0;
+        if (appRuntime.mm >= 60) {
+          appRuntime.mm = 0;
+          appRuntime.hh++;
+        }
+      }
+    //}
+    RTC->TASKS_CLEAR = 1;
+  }
+}

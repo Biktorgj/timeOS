@@ -1,0 +1,78 @@
+/*
+ * System class
+ *  This puts all the watch toghether
+ *
+ *
+ *
+ */
+ #ifndef _PINETIMESYS_
+ #define _PINETIMESYS_
+ #include <nrf.h>
+
+ #define RTC NRF_RTC0
+ #define RTC_IRQ RTC0_IRQn
+
+ /**
+ * Reset events and read back on nRF52
+ * http://infocenter.nordicsemi.com/pdf/nRF52_Series_Migration_v1.0.pdf
+ */
+ #if __CORTEX_M == 0x04
+ #define NRF5_RESET_EVENT(event)                                                 \
+ event = 0;                                                                   \
+ (void)event
+ #else
+ #define NRF5_RESET_EVENT(event) event = 0
+ #endif
+
+
+
+struct DateTimeArray {
+  uint8_t dd;
+  uint8_t mm;
+  uint8_t yy;
+  uint8_t hh;
+  uint8_t ii;
+  uint8_t ss;
+};
+
+class System
+{
+  public:
+    System();
+    DateTimeArray getCurrentTime();
+    uint8_t getCurrentApp();
+    bool setCurrentApp(uint8_t);
+    void resetStandbyTime();
+    bool getLCDState();
+    void setLCDState(bool);
+    void updateStandbyTime(void);
+    bool isTimeToSleep();
+  private:
+    unsigned int current_app;
+    unsigned int available_apps;
+    unsigned long display_start_time;
+    unsigned long display_end_time;
+    unsigned long prevTick;
+    bool lcd_state;
+    unsigned int lcd_standby_seconds;
+    DateTimeArray timestorage;
+    int hh;
+    int mm;
+    int ss;
+    /*
+     *
+     *  Power mode:
+     *  0: Running
+     *  1: Display off, running
+     *  2: Powersave mode, accel on
+     *  3: Deep sleep, accel off
+     *
+     */
+    unsigned long power_mode;
+    void resetState(void);
+    void startRTC(void);
+};
+
+// This must be in one line
+
+#endif

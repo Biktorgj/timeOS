@@ -14,26 +14,22 @@
 #include "src/driver/power.h"
 #include "src/driver/vibra.h"
 #include "src/driver/bma421.h"
-#include "src/driver/rtc.h"
-// Application code
-#include "src/app/runtime.h"
-#include "src/app/app.h"
 
+// Application code
+#include "src/app/system.h"
+#include "src/app/app.h"
 #include "src/app/debug.h"
 #include "src/app/clock.h"
+
+System sys;
 
 //app_settings appSettings;
 #define HRSPowerPin 26
 #include "HRS3300lib.h"
 HRS3300lib HRS3300;
 
-#include <nrf.h>
 
-#define RTC NRF_RTC0
-#define RTC_IRQ RTC0_IRQn
-int interrupt = 0;
 
-int refreshTime;
 // Initialize classes
 PowerMGR PowerMGR;
 BMA421 BMA421;
@@ -42,22 +38,7 @@ Clock Clock;
 Debug Debug;
 Input Input;
 
-unsigned int current = 0;
-int tMode = 0;
-int mode = 0; // 0: suspend, 1: debug, 2: clock
-int timedout = 0;
-int secs = 0;
-
 int bmainit_rec = 0x00;
-app_runtime appRuntime;
-/*
-Delays:
-*/
-const unsigned long DELAY_TIME = 1000; // mS == 1sec
-
-static unsigned irq_counter = 0;
-boolean LD = false;
-
 
 void setupAccel() {
   uint8_t res;
@@ -73,83 +54,60 @@ void setupLCD() {
   // tft.setFont(&FreeSans9pt7b);
 
 }
-void setAppDefault() {
-  appRuntime.display_start_time = millis();
-  appRuntime.display_end_time = millis();
-  appRuntime.current_app = 0;
-  appRuntime.hh = 0;
-  appRuntime.mm = 0;
-  appRuntime.ss = 0;
 
-}
+
 void setup(void) {
-  //  bmainit_rec = setupAccel();
-  appRuntime.prevTick = millis();
-  displayOn();
-  timedout = 0;
+  // Reset all variables to default
+  // Setup devices
   setupVibrator();
-  // setBacklightLevel(5);
+  displayOn();
   setupLCD();
-
   Touch.init();
-  //  setupAccel();
   // SET TEST MODE FOR HRM
-  pinMode(30u, INPUT);
+  //  pinMode(30u, INPUT);
   //  digitalWrite(30u, HIGH);
-  refreshTime = millis();
+
+  //  bmainit_rec = setupAccel();
+  // setBacklightLevel(5);
+  //  setupAccel();
 
   //flash.begin();
-  attachInterrupt(digitalPinToInterrupt(SIDE_BTN_IN), buttonInterrupt, RISING);
-  attachInterrupt(digitalPinToInterrupt(TP_INT), touchInterrupt, RISING);
-  // Test interrupt from the accel / gyro
-  // attachInterrupt(digitalPinToInterrupt(BMA400_INTERRUPT), touchInterrupt, RISING);
+
   HRS3300.begin();
   HRS3300.end();
 
-  /* RTC */
-  // Configure RTC
-  RTC->TASKS_STOP = 1;
-  RTC->PRESCALER = 31; //1024Hz frequency
-  RTC->CC[0] = RTC->COUNTER + (1 * 1024);
-  RTC->EVTENSET = RTC_EVTENSET_COMPARE0_Msk;
-  RTC->INTENSET = RTC_INTENSET_COMPARE0_Msk;
-  RTC->TASKS_START = 1;
-  RTC->EVENTS_COMPARE[0] = 0;
 
-  // Enable interrupt
-  NVIC_SetPriority(RTC_IRQ, 15);
-  NVIC_ClearPendingIRQ(RTC_IRQ);
-  NVIC_EnableIRQ(RTC_IRQ);
+  // Attach interrupts for touchscreen and key
+  attachInterrupt(digitalPinToInterrupt(SIDE_BTN_IN), buttonInterrupt, RISING);
+  attachInterrupt(digitalPinToInterrupt(TP_INT), touchInterrupt, RISING);
 
-
+  // Test interrupt from the accel / gyro
+  // attachInterrupt(digitalPinToInterrupt(BMA400_INTERRUPT), touchInterrupt, RISING);
 }
 void buttonInterrupt() {
-  tMode = !tMode;
-  appRuntime.display_start_time = millis();
-  appRuntime.display_end_time = millis();
-  if (timedout) {
-    timedout = 0;
+  sys.resetStandbyTime();
+  if (!sys.getLCDState()) {
+    sys.setLCDState(true);
+    sys.setCurrentApp(0);
     displayOn();
   } else {
-    timedout = 1;
+    sys.setLCDState(false);
     displayOff();
   }
   delay(200);
 }
 void touchInterrupt() {
-  appRuntime.display_start_time = millis();
-  appRuntime.display_end_time = millis();
+  sys.resetStandbyTime();
   Touch.read();
-
-  if (timedout) {
-    timedout = 0;
-    appRuntime.current_app = 0;
+  if (!sys.getLCDState()) {
+    sys.setLCDState(true);
+    sys.setCurrentApp(0);
     displayOn();
   } else {
     if (Touch.params.action == 2 && Touch.params.gesture == 2) {
-      switchApp(true);
+      switchApp(sys.getCurrentApp()+1);
     } else if (Touch.params.action == 2 && Touch.params.gesture == 1) {
-      switchApp(false);
+      switchApp(sys.getCurrentApp()-1);
     }
   }
 }
@@ -159,27 +117,20 @@ void drawBattery() {
   unsigned int percent = PowerMGR.getBatteryPercentage();
   String volts = String(voltage) + "mV" ;
   String perc = String(percent) + "%";
-  cleanArea(0, 0, 3, 1);
+  cleanArea(0, 0, 20, 1);
   tft.setCursor(0, 0);
   tft.setTextSize(3);
   tft.setTextColor(WHITE);
   tft.println(volts);
-  cleanArea(5, 0, 3, 1);
-  tft.setCursor(180, 0);
-  tft.setTextColor(RED);
+  //cleanArea(5, 0, 3, 1);
+  tft.setCursor(150, 0);
+  tft.setTextColor(GREEN);
   tft.println(perc);
+  tft.setTextColor(BLUE);
 }
 
-void switchApp(bool next) {
-  if (next && appRuntime.current_app < 2) {
-    appRuntime.current_app++;
-  } else if (next) {
-    appRuntime.current_app = 0;
-  } else if (!next && appRuntime.current_app > 0) {
-    appRuntime.current_app--;
-  } else {
-    appRuntime.current_app = 0;
-  }
+void switchApp(uint8_t appID) {
+  bool result = sys.setCurrentApp(appID);
 }
 /*
 void hrmTest() {
@@ -212,18 +163,19 @@ tft.println("HRMTest END"); // Sensor not touched put finger or wrist on it
 void loop() {
   // tft.fillScreen(BLACK);
   float x = 0, y = 0, z = 0;
-  if (!timedout) {
+  if (sys.getLCDState()) {
+    drawBattery();
 
     //    BMA421.readData();
     //Touch.read();
-    switch (appRuntime.current_app) {
+    switch (sys.getCurrentApp()) {
       case 0:
-      cleanArea(0, 0, 6, 6);
-      Clock.drawClock(tft, appRuntime.hh, appRuntime.mm, appRuntime.ss);
+      cleanArea(0, 3, 6, 6);
+      Clock.drawClock(&tft, &sys);
       break;
       case 1:
-      cleanArea(0, 0, 6, 6);
-      Debug.drawDebug(tft);
+      cleanArea(0, 3, 6, 6);
+      Debug.drawDebug(&tft, &sys);
       break;
       case 2:
       drawBattery();
@@ -267,6 +219,8 @@ void loop() {
       }
       break;
       default:
+      tft.println("APP ERR");
+
       break;
     }
     //  hrmTest();
@@ -278,11 +232,11 @@ void loop() {
   //tft.drawTriangle(50, 50, 120, 180, 120, 120, PRIMARY_COLOR);
   //  tft.drawCircle(200, 200, 30, PRIMARY_COLOR);
 
-  if (!timedout) {
-    appRuntime.display_end_time = millis();
+  if (sys.getLCDState()) {
+    sys.updateStandbyTime();
   }
-  if ((appRuntime.display_end_time - appRuntime.display_start_time) >= 40000) {
-    timedout = 1;
+  if (sys.isTimeToSleep()) {
+    sys.setLCDState(false);
     displayOff();
     __WFI();
   }
@@ -306,38 +260,4 @@ void cleanArea(int xa, int ya, int bl_w, int bl_h) {
   height = 32 * bl_h;
   tft.fillRect(posX, posY, width, height, BLACK);
 
-}
-
-
-/**
-* Reset events and read back on nRF52
-* http://infocenter.nordicsemi.com/pdf/nRF52_Series_Migration_v1.0.pdf
-*/
-#if __CORTEX_M == 0x04
-#define NRF5_RESET_EVENT(event)                                                 \
-event = 0;                                                                   \
-(void)event
-#else
-#define NRF5_RESET_EVENT(event) event = 0
-#endif
-
-// This must be in one line
-extern "C" {
-  void RTC0_IRQHandler(void) {
-    NRF5_RESET_EVENT(RTC->EVENTS_COMPARE[0]);
-    //unsigned long currentTick = millis();
-    //if (currentTick - appRuntime.prevTick >= 500) {
-    //  appRuntime.prevTick = currentTick;
-      appRuntime.ss++;
-      if (appRuntime.ss >= 60) {
-        appRuntime.mm++;
-        appRuntime.ss = 0;
-        if (appRuntime.mm >= 60) {
-          appRuntime.mm = 0;
-          appRuntime.hh++;
-        }
-      }
-    //}
-    RTC->TASKS_CLEAR = 1;
-  }
 }
