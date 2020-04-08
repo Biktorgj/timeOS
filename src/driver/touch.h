@@ -1,3 +1,6 @@
+
+#ifndef _TOUCHCL_
+#define _TOUCHCL_
 /* Touch panel */
 #define TP_RESET 10
 #define TP_INT 28 // input
@@ -34,8 +37,8 @@
 
 struct tsparam {
   uint8_t mode;
-  uint8_t x;  
-  uint8_t y; 
+  uint8_t x;
+  uint8_t y;
   int gesture;
   int action;
 };
@@ -50,11 +53,13 @@ class Touch
     void read();
     void suspend();
     void wake();
-    
+
   private:
     void setupTS();
     void writeByte(byte reg, byte value);
     uint8_t readByte(byte reg);
-    
+
    // void setupInterrupt();
 };
+
+#endif
