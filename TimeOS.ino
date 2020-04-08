@@ -19,14 +19,12 @@
 #include "src/app/system.h"
 #include "src/app/debug.h"
 #include "src/app/clock.h"
-
 System sys;
 
 //app_settings appSettings;
 #define HRSPowerPin 26
 #include "HRS3300lib.h"
 HRS3300lib HRS3300;
-
 
 
 // Initialize classes
@@ -41,26 +39,19 @@ int bmainit_rec = 0x00;
 
 void setupAccel() {
   uint8_t res;
-  BMA421.parameter.I2CAddress = 0x18;                  //Choose I2C Address
+  BMA421.parameter.I2CAddress = 0x18; //Choose I2C Address
   res = BMA421.init();
   BMA421.writeConfigFile();
   BMA421.enableSensorFeatures();
 }
-void setupLCD() {
-  tft.init(240, 240);           // Init ST7789 240x240
-  tft.setRotation(2);
-  tft.fillScreen(BLACK);
-  // tft.setFont(&FreeSans9pt7b);
-
-}
-
 
 void setup(void) {
+  sys.resetState(&tft);
   // Reset all variables to default
   // Setup devices
   setupVibrator();
   displayOn();
-  setupLCD();
+  sys.resetLCD();
   Touch.init();
   // SET TEST MODE FOR HRM
   //  pinMode(30u, INPUT);
@@ -95,7 +86,10 @@ void buttonInterrupt() {
   }
   delay(200);
 }
+
+
 void touchInterrupt() {
+  bool result;
   sys.resetStandbyTime();
   Touch.read();
   if (!sys.getLCDState()) {
@@ -104,9 +98,9 @@ void touchInterrupt() {
     displayOn();
   } else {
     if (Touch.params.action == 2 && Touch.params.gesture == 2) {
-      switchApp(sys.getCurrentApp()+1);
+      result = sys.setCurrentApp(sys.getCurrentApp()+1);
     } else if (Touch.params.action == 2 && Touch.params.gesture == 1) {
-      switchApp(sys.getCurrentApp()-1);
+      result = sys.setCurrentApp(sys.getCurrentApp()-1);
     }
   }
 }
@@ -116,21 +110,16 @@ void drawBattery() {
   unsigned int percent = PowerMGR.getBatteryPercentage();
   String volts = String(voltage) + "mV" ;
   String perc = String(percent) + "%";
-  cleanArea(0, 0, 20, 1);
   tft.setCursor(0, 0);
   tft.setTextSize(3);
-  tft.setTextColor(WHITE);
+  tft.setTextColor(WHITE, BLACK);
   tft.println(volts);
-  //cleanArea(5, 0, 3, 1);
   tft.setCursor(150, 0);
-  tft.setTextColor(GREEN);
+  tft.setTextColor(GREEN, BLACK);
   tft.println(perc);
-  tft.setTextColor(BLUE);
+  tft.setTextColor(BLUE, BLACK);
 }
 
-void switchApp(uint8_t appID) {
-  bool result = sys.setCurrentApp(appID);
-}
 /*
 void hrmTest() {
 cleanArea(0, 1, 5, 8);
@@ -161,27 +150,30 @@ tft.println("HRMTest END"); // Sensor not touched put finger or wrist on it
 */
 void loop() {
   // tft.fillScreen(BLACK);
-  float x = 0, y = 0, z = 0;
+  if (sys.getPreviousApp() != sys.getCurrentApp()) {
+    tft.fillScreen(BLACK);
+    sys.appChanged();
+  }
+
   if (sys.getLCDState()) {
-    drawBattery();
+
 
     //    BMA421.readData();
     //Touch.read();
     switch (sys.getCurrentApp()) {
       case 0:
-      cleanArea(0, 3, 6, 6);
+      drawBattery();
       Clock.drawClock(&tft, &sys);
       break;
       case 1:
-      cleanArea(0, 3, 6, 6);
+      drawBattery();
       Debug.drawDebug(&tft, &sys);
       break;
       case 2:
       drawBattery();
       tft.setTextSize(2);
       tft.setCursor(0, 60);
-      tft.setTextColor(BLUE);
-      cleanArea(0, 1, 5, 8);
+      tft.setTextColor(BLUE, BLACK);
       if (PowerMGR.isCharging()) {
         tft.println("Charging");
       } else {
@@ -240,23 +232,5 @@ void loop() {
     __WFI();
   }
   // tft.fillScreen(WHITE);
-
-}
-
-void cleanArea(int xa, int ya, int bl_w, int bl_h) {
-
-  int posX = 0;
-  int posY = 0;
-  int width = 0;
-  int height = 0;
-  if (xa > 0) {
-    posX = xa * 32; // 32 pixel blocks
-  }
-  if (ya > 0) {
-    posY = ya * 32;
-  }
-  width = 32 * bl_w;
-  height = 32 * bl_h;
-  tft.fillRect(posX, posY, width, height, BLACK);
 
 }
