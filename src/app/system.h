@@ -11,6 +11,16 @@
 
  #define RTC NRF_RTC0
  #define RTC_IRQ RTC0_IRQn
+ 
+ #define APP_MODE_INIT 0x00
+ #define APP_MODE_CLOCK 0x01
+ #define APP_MODE_ALARM 0x02
+ #define APP_MODE_TIMER 0x03
+ #define APP_MODE_CHRONO 0x04
+ #define APP_MODE_NOTIF 0x05
+ #define APP_MODE_HRM 0x06
+ #define APP_MODE_STEPS 0x07
+ #define APP_MODE_DEBUG 0x99
 
  /**
  * Reset events and read back on nRF52

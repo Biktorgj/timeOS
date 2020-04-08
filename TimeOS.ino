@@ -17,7 +17,6 @@
 
 // Application code
 #include "src/app/system.h"
-#include "src/app/app.h"
 #include "src/app/debug.h"
 #include "src/app/clock.h"
 
