@@ -48,7 +48,7 @@ void scanI2C(Adafruit_ST7789 tft)
   int nDevices;
   tft.setCursor(0, 0);
   tft.setTextSize(3);
-  tft.setTextColor(0x0000);
+  tft.setTextColor(0xFFFF, 0x0000);
   tft.println("Scanning...");
 
   nDevices = 0;

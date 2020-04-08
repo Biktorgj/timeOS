@@ -13,7 +13,7 @@ void Debug::drawDebug(Adafruit_ST7789 *tft, System *sys) {
   DateTimeArray datetime = sys->getCurrentTime();
       tft->setCursor(60, 100);
       tft->setTextSize(1);
-      tft->setTextColor(0xF309);
+      tft->setTextColor(0xF309, 0x0000);
       // Date
       if (datetime.dd < 10) {
         tft->print("0");

@@ -12,9 +12,9 @@ Clock::Clock() {
 void Clock::drawClock(Adafruit_ST7789 *tft,System *sys) {
   DateTimeArray datetime = sys->getCurrentTime();
     tft->setTextSize(2);
-    tft->setTextColor(0xFFFF);
 
       tft->setCursor(60, 100);
+      tft->setTextColor(0xFFFF, 0x0000);
 
       // Date
       if (datetime.dd < 10) {
