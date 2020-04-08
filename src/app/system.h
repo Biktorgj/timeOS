@@ -48,6 +48,13 @@ struct DateTimeArray {
   uint8_t ss;
 };
 
+struct TouchEvent {
+  int x;
+  int y;
+  int gesture;
+  int action;
+  bool dispatched;
+};
 class System
 {
   public:
@@ -64,6 +71,9 @@ class System
     void resetState(Adafruit_ST7789 *tft);
     void appChanged();
     uint8_t getPreviousApp();
+    bool isPendingTouchEvent();
+    TouchEvent getTouchEvent();
+    void notifyTouchEvent(TouchEvent);
 
   private:
     unsigned int current_app;
@@ -75,6 +85,7 @@ class System
     bool lcd_state;
     unsigned int lcd_standby_seconds;
     DateTimeArray timestorage;
+    TouchEvent touch_event;
     int hh;
     int mm;
     int ss;

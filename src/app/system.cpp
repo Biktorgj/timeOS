@@ -33,6 +33,7 @@ uint8_t System::getPreviousApp() {
 void System::appChanged() {
   previous_app = current_app;
 }
+
 bool System::setCurrentApp(uint8_t appID) {
 
 
@@ -45,6 +46,17 @@ bool System::setCurrentApp(uint8_t appID) {
 
   return true; // failed
 }
+bool System::isPendingTouchEvent() {
+  return !touch_event.dispatched;
+}
+TouchEvent System::getTouchEvent() {
+  return touch_event;
+}
+void System::notifyTouchEvent(TouchEvent thisEvent) {
+  touch_event = thisEvent;
+}
+
+
 void System::resetStandbyTime() {
   display_start_time = millis();
   display_end_time = millis();

@@ -19,6 +19,7 @@
 #include "src/app/system.h"
 #include "src/app/debug.h"
 #include "src/app/clock.h"
+#include "src/app/main_menu.h"
 System sys;
 
 //app_settings appSettings;
@@ -34,7 +35,7 @@ Touch Touch;
 Clock Clock;
 Debug Debug;
 Input Input;
-
+MainMenu MainMenu;
 int bmainit_rec = 0x00;
 
 void setupAccel() {
@@ -90,19 +91,27 @@ void buttonInterrupt() {
 
 void touchInterrupt() {
   bool result;
+  TouchEvent thisEvent;
   sys.resetStandbyTime();
   Touch.read();
+  thisEvent.x = Touch.params.x;
+  thisEvent.y = Touch.params.y;
+  thisEvent.action = Touch.params.action;
+  thisEvent.gesture = Touch.params.gesture;
   if (!sys.getLCDState()) {
     sys.setLCDState(true);
     sys.setCurrentApp(0);
     displayOn();
   } else {
-    if (Touch.params.action == 2 && Touch.params.gesture == 2) {
+    if (Touch.params.action == 2 && Touch.params.gesture == 3) {
       result = sys.setCurrentApp(sys.getCurrentApp()+1);
-    } else if (Touch.params.action == 2 && Touch.params.gesture == 1) {
+      thisEvent.dispatched = true;
+    } else if (Touch.params.action == 2 && Touch.params.gesture == 4) {
       result = sys.setCurrentApp(sys.getCurrentApp()-1);
+      thisEvent.dispatched = true;
     }
   }
+  sys.notifyTouchEvent(thisEvent);
 }
 
 void drawBattery() {
@@ -156,8 +165,6 @@ void loop() {
   }
 
   if (sys.getLCDState()) {
-
-
     //    BMA421.readData();
     //Touch.read();
     switch (sys.getCurrentApp()) {
@@ -166,10 +173,14 @@ void loop() {
       Clock.drawClock(&tft, &sys);
       break;
       case 1:
+      //drawBattery();
+      MainMenu.render(&tft, &sys);
+      break;
+      case 2:
       drawBattery();
       Debug.drawDebug(&tft, &sys);
       break;
-      case 2:
+      case 3:
       drawBattery();
       tft.setTextSize(2);
       tft.setCursor(0, 60);
@@ -211,7 +222,6 @@ void loop() {
       break;
       default:
       tft.println("APP ERR");
-
       break;
     }
     //  hrmTest();
