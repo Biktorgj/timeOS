@@ -1,10 +1,10 @@
 /* Base clock */
 #include <Adafruit_ST7789.h>
-class Clock
+class Debug
 {
   public:
-    Clock();
-    void drawClock(Adafruit_ST7789 tft);
+    Debug();
+    void drawDebug(Adafruit_ST7789 tft);
   private:
     int hh;
     int mm;

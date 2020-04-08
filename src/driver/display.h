@@ -25,7 +25,7 @@ Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RS
 #define GREEN    0x07E0
 #define CYAN     0x07FF
 #define MAGENTA  0xF81F
-#define YELLOW   0xFFE0 
+#define YELLOW   0xFFE0
 #define BG_COLOR    0xFFFF
 
 // Color definitions
@@ -43,38 +43,71 @@ int getBacklightLevel() {
   return backlightLevel;
 }
 void setBacklightLevel(int level) {
+  pinMode(TFT_BL_LOW, INPUT);
+  pinMode(TFT_BL_MID, INPUT);
+  pinMode(TFT_BL_HI, INPUT);
+    delay(10);
   switch (level) {
     case 0:
-      pinMode(TFT_BL_LOW, OUTPUT);
-      digitalWrite(TFT_BL_LOW, HIGH);
-      break;
+    pinMode(TFT_BL_LOW, OUTPUT);
+    digitalWrite(TFT_BL_LOW, HIGH);
+    break;
     case 1:
-      pinMode(TFT_BL_MID, OUTPUT);
-      digitalWrite(TFT_BL_MID, HIGH);
-      break;
-     default:
-      pinMode(TFT_BL_HI, OUTPUT);
-      digitalWrite(TFT_BL_HI, HIGH);
-      break;
+    pinMode(TFT_BL_MID, OUTPUT);
+    delay(10);
+    digitalWrite(TFT_BL_MID, HIGH);
+    break;
+    case 2:
+    pinMode(TFT_BL_LOW, OUTPUT);
+    pinMode(TFT_BL_MID, OUTPUT);
+    delay(10);
+    digitalWrite(TFT_BL_LOW, HIGH);
+    digitalWrite(TFT_BL_MID, HIGH);
+    break;
+    case 3:
+    pinMode(TFT_BL_HI, OUTPUT);
+    digitalWrite(TFT_BL_HI, HIGH);
+    break;
+    case 4:
+    pinMode(TFT_BL_LOW, OUTPUT);
+    pinMode(TFT_BL_HI, OUTPUT);
+    delay(10);
+    digitalWrite(TFT_BL_LOW, HIGH);
+    digitalWrite(TFT_BL_HI, HIGH);
+    break;
+    case 5:
+    pinMode(TFT_BL_LOW, OUTPUT);
+    pinMode(TFT_BL_MID, OUTPUT);
+    pinMode(TFT_BL_HI, OUTPUT);
+    delay(10);
+    digitalWrite(TFT_BL_LOW, HIGH);
+    digitalWrite(TFT_BL_MID, HIGH);
+    digitalWrite(TFT_BL_HI, HIGH);
+    break;
+
+    default:
+    pinMode(TFT_BL_HI, OUTPUT);
+    digitalWrite(TFT_BL_HI, HIGH);
+    break;
   }
   delay(10);
 }
 
 void displayOff() {
   pinMode(TFT_BL_LOW, INPUT);
-    pinMode(TFT_BL_MID, INPUT);
-      pinMode(TFT_BL_MID, INPUT);
-      delay(10);
+  pinMode(TFT_BL_MID, INPUT);
+  pinMode(TFT_BL_MID, INPUT);
+  delay(10);
   digitalWrite(TFT_BL_LOW, HIGH);
   digitalWrite(TFT_BL_MID, HIGH);
   digitalWrite(TFT_BL_HI, HIGH);
 }
 
 void displayOn() {
-    pinMode(TFT_BL_LOW, OUTPUT);
-    pinMode(TFT_BL_MID, OUTPUT);
-      pinMode(TFT_BL_MID, OUTPUT);
-      delay(10);
+  pinMode(TFT_BL_LOW, OUTPUT);
+  pinMode(TFT_BL_MID, OUTPUT);
+  pinMode(TFT_BL_MID, OUTPUT);
+  delay(10);
   digitalWrite(TFT_BL_LOW, LOW);
   digitalWrite(TFT_BL_MID, LOW);
   digitalWrite(TFT_BL_HI, LOW);

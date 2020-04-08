@@ -8,11 +8,11 @@
 PowerMGR::PowerMGR() {
   pinMode(BATT_VCC, INPUT);
   pinMode(BATT_CHG, INPUT);
-  
+
 }
 float PowerMGR::getBatteryVoltage() {
   _currentVoltage = (analogRead(BATT_VCC) * 2000) / (1024/3.3);
-  _currentPercentage = (((_currentVoltage/1000) - 3.55)*100);
+  _currentPercentage = map(_currentVoltage, 3400, 4250, 0,100);//(((_currentVoltage/1000) - 3.55)*100);
   return _currentVoltage;
 }
 
