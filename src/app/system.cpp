@@ -14,7 +14,7 @@ typedef struct rtctimerdata {
 rtctimerdata curtime;
 
 System::System() {
-  resetState();
+
   startRTC();
 }
 
@@ -27,8 +27,18 @@ DateTimeArray System::getCurrentTime() {
 uint8_t System::getCurrentApp() {
   return current_app;
 }
+uint8_t System::getPreviousApp() {
+  return previous_app;
+}
+void System::appChanged() {
+  previous_app = current_app;
+}
 bool System::setCurrentApp(uint8_t appID) {
-  if (appID >= 0 && appID < available_apps) {
+
+
+  if (appID >= 0 && appID < available_apps &&
+      appID != current_app) {
+    previous_app = current_app;
     current_app = appID;
     return false; // success
   }
@@ -45,6 +55,12 @@ void System::updateStandbyTime() {
 bool System::getLCDState() {
   return lcd_state;
 }
+void System::resetLCD() {
+  disp->init(240, 240);
+  disp->setRotation(2); // Turn the display around
+  disp->fillScreen(0x0000); // Paint it black
+  // tft.setFont(&FreeSans9pt7b);
+}
 void System::setLCDState(bool state) {
   lcd_state = state;
 }
@@ -54,10 +70,12 @@ bool System::isTimeToSleep() {
   }
   return false;
 }
-void System::resetState(void) {
+void System::resetState(Adafruit_ST7789 *tft) {
+  disp = tft;
   display_start_time = millis();
   display_end_time = millis();
   prevTick = millis();
+  previous_app = 0;
   current_app = 0;
   available_apps = 3;
   hh = 0;
@@ -72,7 +90,6 @@ void System::resetState(void) {
   timestorage.mm = 0;
   timestorage.yy = 0;
   lcd_standby_seconds = 20;
-
 }
 
 void System::startRTC() {

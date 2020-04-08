@@ -5,13 +5,16 @@
  *
  *
  */
- #ifndef _PINETIMESYS_
- #define _PINETIMESYS_
+
+ #ifndef _SYSTEMCL_
+ #define _SYSTEMCL_
+
  #include <nrf.h>
+ #include <Adafruit_ST7789.h>
 
  #define RTC NRF_RTC0
  #define RTC_IRQ RTC0_IRQn
- 
+
  #define APP_MODE_INIT 0x00
  #define APP_MODE_CLOCK 0x01
  #define APP_MODE_ALARM 0x02
@@ -55,10 +58,16 @@ class System
     void resetStandbyTime();
     bool getLCDState();
     void setLCDState(bool);
+    void resetLCD();
     void updateStandbyTime(void);
     bool isTimeToSleep();
+    void resetState(Adafruit_ST7789 *tft);
+    void appChanged();
+    uint8_t getPreviousApp();
+
   private:
     unsigned int current_app;
+    unsigned int previous_app;
     unsigned int available_apps;
     unsigned long display_start_time;
     unsigned long display_end_time;
@@ -69,6 +78,8 @@ class System
     int hh;
     int mm;
     int ss;
+    Adafruit_ST7789 *disp;
+
     /*
      *
      *  Power mode:
@@ -79,7 +90,6 @@ class System
      *
      */
     unsigned long power_mode;
-    void resetState(void);
     void startRTC(void);
 };
 
