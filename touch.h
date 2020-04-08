@@ -1,6 +1,7 @@
 /* Touch panel */
 #define TP_RESET 10
 #define TP_INT 28 // input
+#define TP_I2C_ADDRESS 0x15
 #define HRM_TEST 30 // input
 
 #define FLAGBIT(x)              (0x00000001 << (x))
@@ -32,19 +33,28 @@
 #define HYN_REG_ESD_SATURATE                0xED
 
 struct tsparam {
-  uint8_t I2CAddress;
   uint8_t mode;
-  float x;  
-  float y; 
-  float z;  
+  uint8_t x;  
+  uint8_t y; 
+  int gesture;
+  int action;
 };
 class Touch
 {
   public:
-    tsparam parameter;
+    tsparam params;
     Touch();
     void init();
+    uint8_t getX();
+    uint8_t getY();
+    void read();
+    void suspend();
+    void wake();
     
   private:
+    void setupTS();
+    void writeByte(byte reg, byte value);
+    uint8_t readByte(byte reg);
+    
    // void setupInterrupt();
 };
