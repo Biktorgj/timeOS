@@ -1,32 +1,26 @@
+#include <String.h> 
+
 #include <Adafruit_GFX.h>    // Core graphics library
-//#include <millisDelay.h>
 #include <Adafruit_ST7789.h> // Hardware-specific library for ST7789 (with or without CS pin)
-// #include <Fonts/FreeSans9pt7b.h>
 
-#include <SPI.h>
+#include <SPI.h> // SPI
+#include <Wire.h> // I2C
 
-//#include<SPIMemory.h>
-#include <String.h>
 
-//#include "Graphics.h"
+
 #include "i2c.h"
-//#include "lcd.h"
 #include "display.h"
 #include "touch.h"
 #include "keys.h"
 #include "power.h"
-//#include "hardware.h"
 #include "vibra.h"
 #include "clock.h"
-#include <Wire.h>
-#include "BlueDot_BMA400.h"
-BlueDot_BMA400 bma400 = BlueDot_BMA400();
 
 
 //#include <RTC.h>
-//#define NRF52 1
-//#define USE_SPI_DMA 1
+
 PowerMGR PowerMGR;
+Touch Touch;
 Clock Clock;
 Input Input;
 float p = 3.1415926;
@@ -37,12 +31,12 @@ int timedout = 0;
 int secs = 0;
 unsigned long startTime;
 unsigned long endTime;
+int bmainit_rec = 0x00;
 /*
    Delays:
 */
 const unsigned long DELAY_TIME = 1000; // mS == 1sec
-// milisDelay refreshDelay;
-// SPIFlash flash;
+
 
 void setupGPIO() {
   pinMode(TFT_BL_LOW, OUTPUT);
@@ -61,18 +55,23 @@ void setupLCD() {
 }
 
 void setup(void) {
+  bmainit_rec = setupAccel();
   startTime = millis();
   endTime = millis();
   timedout = 0;
    setupVibrator();
   setupGPIO();
   setBacklightLevel(0);
-  // OR use this initializer (uncomment) if using a 1.3" or 1.54" 240x240 TFT:
   setupLCD();
+  Touch.init();
+  delay(200);
+
+
   //flash.begin();
   attachInterrupt(digitalPinToInterrupt(SIDE_BTN_IN), handleInputButton, RISING);
-  attachInterrupt(digitalPinToInterrupt(TP_INT), handleTouchWake, RISING);
-
+  attachInterrupt(digitalPinToInterrupt(TP_INT), handleTouchWake, FALLING);
+  // Test interrupt from the accel / gyro
+   attachInterrupt(digitalPinToInterrupt(BMA400_INTERRUPT), handleTouchWake, RISING);
 
 }
 void handleInputButton() {
@@ -114,17 +113,23 @@ void drawBattery() {
 }
 
 void loop() {
+  
   if (!timedout) {
     drawBattery();
     tft.setCursor(0, 60);
     tft.setTextColor(BLUE);
     cleanArea(0, 1, 7, 3);
     if (PowerMGR.isCharging()) {
-      tft.println("Charging");
+      tft.println(getX());
+      tft.println(getY());
+      tft.println(getZ());
+      tft.println(bmainit_rec, HEX);
     } else {
       tft.println("NOT Charging");
     }
-  }
+  } /*else {
+    scanI2C(tft);
+  }*/
   //tft.drawTriangle(50, 50, 120, 180, 120, 120, PRIMARY_COLOR);
   //  tft.drawCircle(200, 200, 30, PRIMARY_COLOR);
   if (!timedout) {

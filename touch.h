@@ -31,11 +31,20 @@
 #define HYN_REG_GESTURE_OUTPUT_ADDRESS      0xD3
 #define HYN_REG_ESD_SATURATE                0xED
 
+struct tsparam {
+  uint8_t I2CAddress;
+  uint8_t mode;
+  float x;  
+  float y; 
+  float z;  
+};
 class Touch
 {
   public:
+    tsparam parameter;
     Touch();
-
+    void init();
+    
   private:
-    void setupInterrupt();
+   // void setupInterrupt();
 };
