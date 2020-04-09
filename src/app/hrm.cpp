@@ -58,6 +58,9 @@ void HeartRate::render(Adafruit_ST7789 *tft, System *sys) {
     tft->setCursor(30, 210);
     tft->println("Stop reading");
     if (!thisEvent.dispatched && thisEvent.y >= 180) {
+      tft->setTextColor(0x00CF, 0x0000);
+      tft->setCursor(40, 140);
+      tft->println("Stopped!       "); // Not enough data to calculate Heartrate please wait
       HRS3300.end();
       _reading = false;
     }
@@ -69,4 +72,9 @@ void HeartRate::render(Adafruit_ST7789 *tft, System *sys) {
     tft->setCursor(40, 140);
     tft->println("Timed out!");
   }
+}
+
+void HeartRate::resetSensorLib() {
+  HRS3300.begin();
+  HRS3300.end();
 }

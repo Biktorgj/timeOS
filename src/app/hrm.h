@@ -10,6 +10,7 @@ class HeartRate
   public:
     HeartRate();
     void render(Adafruit_ST7789 *tft, System *sys);
+    void resetSensorLib();
   private:
     bool _reading;
     uint8_t _lastread;
