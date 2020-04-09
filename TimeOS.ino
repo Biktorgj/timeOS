@@ -140,37 +140,17 @@ void loop() {
       if (PowerMGR.isCharging()) {
         tft.println("Charging");
       } else {
-        tft.println("Draining");
+        tft.println("Discharging");
       }
-      tft.println(BMA421.parameter.raw_acc_x);
-      tft.println(BMA421.parameter.raw_acc_y);
-      tft.println(BMA421.parameter.raw_acc_z);
-      tft.println("Touch:");
-      tft.println(Touch.params.x);
-      tft.println(Touch.params.y);
-      if (Touch.params.action == 2) {
-        switch (Touch.params.gesture) {
-          case 1:
-          tft.println("Swipe Up");
-          break;
-          case 2:
-          tft.println("Swipe Down");
-          break;
-          case 3:
-          tft.println("Swipe Right");
-          break;
-          case 4:
-          tft.println("Swipe Left");
-          break;
-          default:
-          tft.println(Touch.params.action);
+      tft.println("Accel:");
+      tft.print("X: ");
+      tft.print(BMA421.parameter.raw_acc_x);
+      tft.print(" Y: ");
+      tft.print(BMA421.parameter.raw_acc_y);
+      tft.print(" Z: ");
+      tft.print(BMA421.parameter.raw_acc_z);
 
-          break;
-        }
-      } else {
-        tft.println(Touch.params.gesture);
-        tft.println(Touch.params.action);
-      }
+
       break;
       default:
       tft.println("APP ERR");
