@@ -30,13 +30,17 @@ uint8_t System::getCurrentApp() {
 uint8_t System::getPreviousApp() {
   return previous_app;
 }
-void System::appChanged() {
+void System::reportAppChanged() {
   previous_app = current_app;
+}
+bool System::isAppChanged() {
+  if (previous_app == current_app) {
+      return false;
+  }
+  return true;
 }
 
 bool System::setCurrentApp(uint8_t appID) {
-
-
   if (appID >= 0 && appID < available_apps &&
       appID != current_app) {
     previous_app = current_app;
@@ -50,7 +54,9 @@ bool System::isPendingTouchEvent() {
   return !touch_event.dispatched;
 }
 TouchEvent System::getTouchEvent() {
-  return touch_event;
+  TouchEvent out = touch_event;
+  touch_event.dispatched = true;
+  return out;
 }
 void System::notifyTouchEvent(TouchEvent thisEvent) {
   touch_event = thisEvent;
@@ -89,7 +95,7 @@ void System::resetState(Adafruit_ST7789 *tft) {
   prevTick = millis();
   previous_app = 0;
   current_app = 0;
-  available_apps = 3;
+  available_apps = 5;
   hh = 0;
   mm = 0;
   ss = 0;

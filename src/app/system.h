@@ -5,7 +5,6 @@
  *
  *
  */
-
  #ifndef _SYSTEMCL_
  #define _SYSTEMCL_
 
@@ -37,8 +36,6 @@
  #define NRF5_RESET_EVENT(event) event = 0
  #endif
 
-
-
 struct DateTimeArray {
   uint8_t dd;
   uint8_t mm;
@@ -55,6 +52,13 @@ struct TouchEvent {
   int action;
   bool dispatched;
 };
+
+struct Accel {
+  uint16_t x;
+  uint16_t y;
+  uint16_t z;
+};
+
 class System
 {
   public:
@@ -69,16 +73,19 @@ class System
     void updateStandbyTime(void);
     bool isTimeToSleep();
     void resetState(Adafruit_ST7789 *tft);
-    void appChanged();
+    void reportAppChanged();
+    bool isAppChanged();
     uint8_t getPreviousApp();
     bool isPendingTouchEvent();
     TouchEvent getTouchEvent();
     void notifyTouchEvent(TouchEvent);
 
   private:
+    // Current app tracking
     unsigned int current_app;
     unsigned int previous_app;
     unsigned int available_apps;
+
     unsigned long display_start_time;
     unsigned long display_end_time;
     unsigned long prevTick;
