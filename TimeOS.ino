@@ -20,13 +20,8 @@
 #include "src/app/debug.h"
 #include "src/app/clock.h"
 #include "src/app/main_menu.h"
+#include "src/app/hrm.h"
 System sys;
-
-//app_settings appSettings;
-#define HRSPowerPin 26
-#include "HRS3300lib.h"
-HRS3300lib HRS3300;
-
 
 // Initialize classes
 PowerMGR PowerMGR;
@@ -35,8 +30,8 @@ Touch Touch;
 Clock Clock;
 Debug Debug;
 Input Input;
+HeartRate HeartRate;
 MainMenu MainMenu;
-int bmainit_rec = 0x00;
 
 void setupAccel() {
   uint8_t res;
@@ -47,33 +42,17 @@ void setupAccel() {
 }
 
 void setup(void) {
-  sys.resetState(&tft);
   // Reset all variables to default
+  sys.resetState(&tft);
   // Setup devices
   setupVibrator();
   displayOn();
   sys.resetLCD();
   Touch.init();
-  // SET TEST MODE FOR HRM
-  //  pinMode(30u, INPUT);
-  //  digitalWrite(30u, HIGH);
-
-  //  bmainit_rec = setupAccel();
-  // setBacklightLevel(5);
-  //  setupAccel();
-
-  //flash.begin();
-
-  HRS3300.begin();
-  HRS3300.end();
-
-
+  HeartRate.resetSensorLib();
   // Attach interrupts for touchscreen and key
   attachInterrupt(digitalPinToInterrupt(SIDE_BTN_IN), buttonInterrupt, RISING);
   attachInterrupt(digitalPinToInterrupt(TP_INT), touchInterrupt, RISING);
-
-  // Test interrupt from the accel / gyro
-  // attachInterrupt(digitalPinToInterrupt(BMA400_INTERRUPT), touchInterrupt, RISING);
 }
 void buttonInterrupt() {
   sys.resetStandbyTime();
@@ -98,6 +77,7 @@ void touchInterrupt() {
   thisEvent.y = Touch.params.y;
   thisEvent.action = Touch.params.action;
   thisEvent.gesture = Touch.params.gesture;
+  thisEvent.dispatched = false;
   if (!sys.getLCDState()) {
     sys.setLCDState(true);
     sys.setCurrentApp(0);
@@ -129,58 +109,30 @@ void drawBattery() {
   tft.setTextColor(BLUE, BLACK);
 }
 
-/*
-void hrmTest() {
-cleanArea(0, 1, 5, 8);
-tft.println("HRMTest"); // Sensor not touched put finger or wrist on it
-if (millis() - refreshTime > 40) {
-refreshTime = millis();
-uint8_t algo = HRS3300.getHR();
-tft.println("Begin!"); // Sensor not touched put finger or wrist on it
-
-switch (algo) {
-case 255:
-tft.println("Nothing"); // Sensor not touched put finger or wrist on it
-// nothing hrs data gets only every 25 calls answered
-break;
-case 254:
-tft.println("NO_TOUCH"); // Sensor not touched put finger or wrist on it
-break;
-case 253:
-tft.println("DATA_TOO_SHORT"); // Not enough data to calculate Heartrate please wait
-break;
-default:
-tft.println(algo); //Got a heartrate print it to Serial
-break;
-}
-}
-tft.println("HRMTest END"); // Sensor not touched put finger or wrist on it
-}
-*/
 void loop() {
-  // tft.fillScreen(BLACK);
-  if (sys.getPreviousApp() != sys.getCurrentApp()) {
-    tft.fillScreen(BLACK);
-    sys.appChanged();
+  if (sys.isAppChanged()) {
+        tft.fillScreen(BLACK);
+        sys.reportAppChanged();
   }
-
   if (sys.getLCDState()) {
-    //    BMA421.readData();
-    //Touch.read();
     switch (sys.getCurrentApp()) {
       case 0:
       drawBattery();
       Clock.drawClock(&tft, &sys);
       break;
       case 1:
-      //drawBattery();
-      MainMenu.render(&tft, &sys);
+      drawBattery();
+      HeartRate.render(&tft, &sys);
       break;
       case 2:
       drawBattery();
-      Debug.drawDebug(&tft, &sys);
+      MainMenu.render(&tft, &sys);
       break;
       case 3:
+      drawBattery();
+      Debug.drawDebug(&tft, &sys);
+      break;
+      case 4:
       drawBattery();
       tft.setTextSize(2);
       tft.setCursor(0, 60);
@@ -224,15 +176,7 @@ void loop() {
       tft.println("APP ERR");
       break;
     }
-    //  hrmTest();
-    //   delay(1000);
-
-  } /*else {
-    scanI2C(tft);
-  }*/
-  //tft.drawTriangle(50, 50, 120, 180, 120, 120, PRIMARY_COLOR);
-  //  tft.drawCircle(200, 200, 30, PRIMARY_COLOR);
-
+  }
   if (sys.getLCDState()) {
     sys.updateStandbyTime();
   }
@@ -241,6 +185,4 @@ void loop() {
     displayOff();
     __WFI();
   }
-  // tft.fillScreen(WHITE);
-
-}
+} // end of loop
