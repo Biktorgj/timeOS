@@ -1,16 +1,17 @@
-/* Battery and charger */
-#define BATT_VCC 31 // input
-#define BATT_CHG 12 // input
+#ifndef _POWER_
+#define _POWER_
 
-class PowerMGR
+class Power
 {
   public:
-    PowerMGR();
+    Power();
     float getBatteryVoltage();
     unsigned int getBatteryPercentage();
     bool isCharging();
-    bool gotoSleep();
+    void suspend();
   private:
     float _currentVoltage;
     unsigned int _currentPercentage;
 };
+
+#endif

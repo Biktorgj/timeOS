@@ -1,31 +1,32 @@
 /*
  * power.cpp: Handle battery reporting functions
 */
-
 #include "Arduino.h"
+#include "gpio.h"
 #include "power.h"
 
-PowerMGR::PowerMGR() {
+Power::Power() {
   pinMode(BATT_VCC, INPUT);
   pinMode(BATT_CHG, INPUT);
 
 }
-float PowerMGR::getBatteryVoltage() {
+float Power::getBatteryVoltage() {
   _currentVoltage = (analogRead(BATT_VCC) * 2000) / (1024/3.3);
-  _currentPercentage = map(_currentVoltage/1000, 3.4, 4.2, 0,100);//(((_currentVoltage/1000) - 3.55)*100);
+  _currentPercentage = map(round(_currentVoltage/10), 342, 450, 0,100);//(((_currentVoltage/1000) - 3.55)*100);
   return _currentVoltage;
 }
 
 
-unsigned int PowerMGR::getBatteryPercentage() {
-    return _currentPercentage;
+unsigned int Power::getBatteryPercentage() {
+  getBatteryVoltage();
+  return _currentPercentage;
 
 }
 
-bool PowerMGR::isCharging() {
+bool Power::isCharging() {
   return !digitalRead(BATT_CHG);
 }
 
-bool PowerMGR::gotoSleep() {
+void Power::suspend() {
   // sleep
 }

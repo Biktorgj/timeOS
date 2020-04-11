@@ -1,6 +1,8 @@
 
-#ifndef _TOUCHCL_
-#define _TOUCHCL_
+#ifndef _TOUCH_
+#define _TOUCH_
+
+
 /* Touch panel */
 #define TP_RESET 10
 #define TP_INT 28 // input
@@ -14,6 +16,7 @@
 #define FILE_NAME_LENGTH                    128
 #define ENABLE                              1
 #define DISABLE                             0
+
 /*register address*/
 #define HYN_REG_INT_CNT                     0x8F
 #define HYN_REG_FLOW_WORK_CNT               0x91
@@ -35,17 +38,18 @@
 #define HYN_REG_GESTURE_OUTPUT_ADDRESS      0xD3
 #define HYN_REG_ESD_SATURATE                0xED
 
-struct tsparam {
+struct touchparam {
   uint8_t mode;
   uint8_t x;
   uint8_t y;
   int gesture;
   int action;
+  bool dispatched;
 };
 class Touch
 {
   public:
-    tsparam params;
+    touchparam params;
     Touch();
     void init();
     uint8_t getX();
