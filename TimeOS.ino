@@ -20,6 +20,7 @@
 // Languages here
 #include "src/views/clock.h"
 #include "src/views/hrm.h"
+#include "src/views/settings.h"
 
 typedef struct RTCTimerData {
   int hh;
@@ -33,8 +34,9 @@ HAL hal;
 System sys(&hal);
 Clock clock(&sys, &hal);
 HeartRate heartrate(&sys, &hal);
+Settings settings(&sys, &hal);
 bool clockBooted = false;
-
+bool alreadyRefreshing = false;
 void startRTC() {
   // Configure RTC
   RTC->TASKS_STOP = 1;
@@ -126,11 +128,14 @@ void touchInterrupt() {
   }
 }
 void handleCurrentView() {
-  if (sys.isAppChanged()) {
+  if (sys.isAppChanged() && !alreadyRefreshing) {
+      alreadyRefreshing = true;
         hal.display->fillScreen(BLACK);
         sys.reportAppChanged();
+        alreadyRefreshing = false;
   }
-  if (sys.getLCDState()) {
+  if (sys.getLCDState() && !alreadyRefreshing) {
+    alreadyRefreshing = true;
     switch (sys.getCurrentApp()) {
       case 0:
         clock.route();
@@ -138,10 +143,14 @@ void handleCurrentView() {
       case 1:
         heartrate.render();
         break;
+      case 2:
+        settings.router();
+        break;
       default:
       hal.display->println("APP ERR");
       break;
     }
+    alreadyRefreshing = false;
   }
 
 

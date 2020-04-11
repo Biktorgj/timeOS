@@ -96,7 +96,7 @@ void System::resetState() {
   prevTick = millis();
   previous_app = 0;
   current_app = 0;
-  available_apps = 2;
+  available_apps = 3;
   hh = 0;
   mm = 0;
   ss = 0;
