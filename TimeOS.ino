@@ -1,7 +1,12 @@
 #include <nrf.h>
 
-#define RTC NRF_RTC0
-#define RTC_IRQ RTC0_IRQn
+/*
+ *  RTC0 is used by Softdevice for bluetooth handling
+ *  RTC1 is used by the Arduino core for delay()
+ *  So we try to use RTC2 as it seems to be free, and it works :)
+ */
+#define RTC NRF_RTC2
+#define RTC_IRQ RTC2_IRQn
 
 
 // Include the HAL
@@ -46,7 +51,6 @@ void startRTC() {
 }
 
 void setup() {
-  startRTC();
   hal.init();
 
   hal.display->setCursor(80,100);
@@ -60,6 +64,8 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(SIDE_BTN_IN), buttonInterrupt, RISING);
   attachInterrupt(digitalPinToInterrupt(TP_INT), touchInterrupt, RISING);
   clockBooted = true;
+  startRTC(); // If I start the RTC bluetooth goes to trash
+
 }
 
 void loop() {
@@ -165,7 +171,7 @@ event = 0;                                                                   \
 #endif
 
 extern "C" {
-  void RTC0_IRQHandler(void) {
+  void RTC2_IRQHandler(void) {
     NRF5_RESET_EVENT(RTC->EVENTS_COMPARE[0]);
     currentTime.ss++;
     if (currentTime.ss >= 60) {
