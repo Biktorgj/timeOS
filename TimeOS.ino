@@ -1,68 +1,91 @@
-#include <String.h>
-// Drivers for SPI & I2C
-#include <SPI.h> // SPI
-#include <Wire.h> // I2C
+#include <nrf.h>
 
-// External Libraries
-#include <Adafruit_GFX.h>    // Core graphics library
-#include <Adafruit_ST7789.h> // Hardware-specific library for ST7789 (with or without CS pin)
+#define RTC NRF_RTC0
+#define RTC_IRQ RTC0_IRQn
 
-// Pinetime drivers
-#include "src/driver/display.h"
-#include "src/driver/touch.h"
-#include "src/driver/keys.h"
-#include "src/driver/power.h"
-#include "src/driver/vibra.h"
-#include "src/driver/bma421.h"
 
-// Application code
-#include "src/app/system.h"
-#include "src/app/debug.h"
-#include "src/app/clock.h"
-#include "src/app/main_menu.h"
-#include "src/app/hrm.h"
-System sys;
+// Include the HAL
+#include "src/hal.h"
 
-// Initialize classes
-PowerMGR PowerMGR;
-BMA421 BMA421;
-Touch Touch;
-Clock Clock;
-Debug Debug;
-Input Input;
-HeartRate HeartRate;
-MainMenu MainMenu;
+// Include system
+#include "src/system.h"
+// Include the base theme
+#include "src/theme.h"
 
-void setupAccel() {
-  uint8_t res;
-  BMA421.parameter.I2CAddress = 0x18; //Choose I2C Address
-  res = BMA421.init();
-  BMA421.writeConfigFile();
-  BMA421.enableSensorFeatures();
+// Languages here
+#include "src/views/clock.h"
+#include "src/views/hrm.h"
+
+typedef struct RTCTimerData {
+  int hh;
+  int mm;
+  int ss;
+};
+RTCTimerData currentTime;
+
+
+HAL hal;
+System sys(&hal);
+Clock clock(&sys, &hal);
+HeartRate heartrate(&sys, &hal);
+bool clockBooted = false;
+
+void startRTC() {
+  // Configure RTC
+  RTC->TASKS_STOP = 1;
+  RTC->PRESCALER = 31; //1024Hz frequency
+  RTC->CC[0] = RTC->COUNTER + (1 * 1024);
+  RTC->EVTENSET = RTC_EVTENSET_COMPARE0_Msk;
+  RTC->INTENSET = RTC_INTENSET_COMPARE0_Msk;
+  RTC->TASKS_START = 1;
+  RTC->EVENTS_COMPARE[0] = 0;
+  // Enable interrupt
+  NVIC_SetPriority(RTC_IRQ, 15);
+  NVIC_ClearPendingIRQ(RTC_IRQ);
+  NVIC_EnableIRQ(RTC_IRQ);
 }
 
-void setup(void) {
-  // Reset all variables to default
-  sys.resetState(&tft);
-  // Setup devices
-  setupVibrator();
-  displayOn();
-  sys.resetLCD();
-  Touch.init();
-  HeartRate.resetSensorLib();
-  // Attach interrupts for touchscreen and key
+void setup() {
+  startRTC();
+  hal.init();
+
+  hal.display->setCursor(80,100);
+  hal.display->setTextSize(2);
+  hal.display->setTextColor(BLACK, WHITE);
+  hal.display->println("Hello!");
+  hal.display->fillScreen(WHITE); // Paint it black
+  sys.resetState();
+  hal.display->fillScreen(BLACK);
+  // Attach Interrupts
   attachInterrupt(digitalPinToInterrupt(SIDE_BTN_IN), buttonInterrupt, RISING);
   attachInterrupt(digitalPinToInterrupt(TP_INT), touchInterrupt, RISING);
+  clockBooted = true;
 }
+
+void loop() {
+  hal.bluetooth->poll();
+  hal.forward();
+  //  clock.route();
+  // loopback();
+  // spam();
+  if (sys.isTimeToSleep()) {
+    sys.setLCDState(false);
+    hal.lcd->setBrightness(0);
+    // hal.suspendDevices();
+    __WFI();
+  }
+}
+
 void buttonInterrupt() {
   sys.resetStandbyTime();
   if (!sys.getLCDState()) {
     sys.setLCDState(true);
     sys.setCurrentApp(0);
-    displayOn();
+    handleCurrentView();
+    hal.lcd->setBrightness(3);
   } else {
     sys.setLCDState(false);
-    displayOff();
+    hal.lcd->setBrightness(0);
   }
   delay(200);
 }
@@ -71,98 +94,89 @@ void buttonInterrupt() {
 void touchInterrupt() {
   bool result;
   TouchEvent thisEvent;
-  sys.resetStandbyTime();
-  Touch.read();
-  thisEvent.x = Touch.params.x;
-  thisEvent.y = Touch.params.y;
-  thisEvent.action = Touch.params.action;
-  thisEvent.gesture = Touch.params.gesture;
+  hal.touch->read();
+  thisEvent.x = hal.touch->params.x;
+  thisEvent.y = hal.touch->params.y;
+  thisEvent.action = hal.touch->params.action;
+  thisEvent.gesture = hal.touch->params.gesture;
   thisEvent.dispatched = false;
+  sys.resetStandbyTime();
   if (!sys.getLCDState()) {
     sys.setLCDState(true);
     sys.setCurrentApp(0);
-    displayOn();
+    hal.lcd->setBrightness(3);
+    handleCurrentView();
+
   } else {
-    if (Touch.params.action == 2 && Touch.params.gesture == 3) {
+    if (hal.touch->params.action == 2 && hal.touch->params.gesture == 3) {
       result = sys.setCurrentApp(sys.getCurrentApp()+1);
       thisEvent.dispatched = true;
-    } else if (Touch.params.action == 2 && Touch.params.gesture == 4) {
+    } else if (hal.touch->params.action == 2 && hal.touch->params.gesture == 4) {
       result = sys.setCurrentApp(sys.getCurrentApp()-1);
       thisEvent.dispatched = true;
     }
+    sys.notifyTouchEvent(thisEvent);
+    handleCurrentView();
   }
-  sys.notifyTouchEvent(thisEvent);
 }
-
-void drawBattery() {
-  unsigned int voltage = PowerMGR.getBatteryVoltage();
-  unsigned int percent = PowerMGR.getBatteryPercentage();
-  String volts = String(voltage) + "mV" ;
-  String perc = String(percent) + "%";
-  tft.setCursor(0, 0);
-  tft.setTextSize(3);
-  tft.setTextColor(WHITE, BLACK);
-  tft.println(volts);
-  tft.setCursor(150, 0);
-  tft.setTextColor(GREEN, BLACK);
-  tft.println(perc);
-  tft.setTextColor(BLUE, BLACK);
-}
-
-void loop() {
+void handleCurrentView() {
   if (sys.isAppChanged()) {
-        tft.fillScreen(BLACK);
+        hal.display->fillScreen(BLACK);
         sys.reportAppChanged();
   }
   if (sys.getLCDState()) {
     switch (sys.getCurrentApp()) {
       case 0:
-      drawBattery();
-      Clock.drawClock(&tft, &sys);
-      break;
+        clock.route();
+        break;
       case 1:
-      drawBattery();
-      HeartRate.render(&tft, &sys);
-      break;
-      case 2:
-      drawBattery();
-      MainMenu.render(&tft, &sys);
-      break;
-      case 3:
-      drawBattery();
-      Debug.drawDebug(&tft, &sys);
-      break;
-      case 4:
-      drawBattery();
-      tft.setTextSize(2);
-      tft.setCursor(0, 60);
-      tft.setTextColor(BLUE, BLACK);
-      if (PowerMGR.isCharging()) {
-        tft.println("Charging");
-      } else {
-        tft.println("Discharging");
-      }
-      tft.println("Accel:");
-      tft.print("X: ");
-      tft.print(BMA421.parameter.raw_acc_x);
-      tft.print(" Y: ");
-      tft.print(BMA421.parameter.raw_acc_y);
-      tft.print(" Z: ");
-      tft.print(BMA421.parameter.raw_acc_z);
-
-
-      break;
+        heartrate.render();
+        break;
       default:
-      tft.println("APP ERR");
+      hal.display->println("APP ERR");
       break;
     }
   }
+
+
+
   if (sys.getLCDState()) {
     sys.updateStandbyTime();
   }
-  if (sys.isTimeToSleep()) {
-    sys.setLCDState(false);
-    displayOff();
-    __WFI();
+}
+void rtcTick() {
+  sys.notifyClockTchange(currentTime.hh, currentTime.mm, currentTime.ss);
+  if (clockBooted) {
+    handleCurrentView();
   }
-} // end of loop
+}
+
+
+/**
+* Reset events and read back on nRF52
+* http://infocenter.nordicsemi.com/pdf/nRF52_Series_Migration_v1.0.pdf
+*/
+#if __CORTEX_M == 0x04
+#define NRF5_RESET_EVENT(event)                                                 \
+event = 0;                                                                   \
+(void)event
+#else
+#define NRF5_RESET_EVENT(event) event = 0
+#endif
+
+extern "C" {
+  void RTC0_IRQHandler(void) {
+    NRF5_RESET_EVENT(RTC->EVENTS_COMPARE[0]);
+    currentTime.ss++;
+    if (currentTime.ss >= 60) {
+      currentTime.mm++;
+      currentTime.ss = 0;
+      if (currentTime.mm >= 60) {
+        currentTime.mm = 0;
+        currentTime.hh++;
+      }
+    }
+    rtcTick();
+    RTC->TASKS_CLEAR = 1;
+  }
+}
