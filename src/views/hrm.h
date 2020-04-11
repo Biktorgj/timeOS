@@ -16,7 +16,6 @@ class HeartRate
     uint8_t _lastread;
     unsigned long _lastrefresh;
     unsigned long _last_begin;
-    HRS3300lib HRS3300;
     System *sys;
     HAL *hal;
 };
