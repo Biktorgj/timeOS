@@ -1,6 +1,6 @@
 /* Base clock */
-#include <Adafruit_ST7789.h>
-#include "system.h"
+#include "../system.h"
+#include "../hal.h"
 #include "HRS3300lib.h"
 
 #ifndef _HEARTRATE_
@@ -8,8 +8,8 @@
 class HeartRate
 {
   public:
-    HeartRate();
-    void render(Adafruit_ST7789 *tft, System *sys);
+    HeartRate(System *System, HAL *Hal);
+    void render();
     void resetSensorLib();
   private:
     bool _reading;
@@ -17,7 +17,8 @@ class HeartRate
     unsigned long _lastrefresh;
     unsigned long _last_begin;
     HRS3300lib HRS3300;
-
+    System *sys;
+    HAL *hal;
 };
 
 #endif
