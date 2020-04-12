@@ -1,14 +1,14 @@
 #ifndef _THEME_
 #define _THEME_
 
-#define PRIMARY_COLOR    0x0000
-#define BLUE     0x001F
-#define ACCENT_COLOR      0xF800
-#define GREEN    0x07E0
-#define CYAN     0x07FF
-#define MAGENTA  0xF81F
-#define YELLOW   0xFFE0
-#define BG_COLOR    0xFFFF
+#define PRIMARY 0x00CF
+#define SECONDARY 0xF000
+#define BGCOLOR 0xFFFF
+#define ACCENT 0xF800
+
+#define SUCCESS 0x000F
+#define WARNING 0xFF00
+#define DANGER 0xF000
 
 // Color definitions
 #define  BLACK   0x0000
