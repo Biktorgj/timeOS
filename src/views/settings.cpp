@@ -15,7 +15,7 @@ Settings::Settings(System *System, HAL * Hal) {
 void Settings::router() {
   TouchEvent thisEvent = sys->getTouchEvent();
   hal->display->setCursor(30, 20);
-  hal->display->fillRect(30, 20, 100, 32, 0x0000);
+  hal->display->fillRect(30, 20, 100, 32, BGCOLOR);
   hal->display->print(thisEvent.x);
   hal->display->print(" - ");
   hal->display->print(thisEvent.y);
@@ -46,7 +46,7 @@ uint8_t handleMenuChange() {
 void Settings::renderMain(TouchEvent event) {
 
   if (!event.dispatched) {
-    if (inRange(30,0,100,240, event.x, event.y)) {
+    if (inRange(50,0,100,240, event.x, event.y)) {
       active_section = 1;
     } else if(inRange(101,0,150,240, event.x, event.y)) {
       active_section = 2;
@@ -57,14 +57,14 @@ void Settings::renderMain(TouchEvent event) {
     }
   }
   hal->display->setTextSize(2);
-  hal->display->setTextColor(0x00CF, 0x0000);
+  hal->display->setTextColor(PRIMARY, BGCOLOR);
 
   hal->display->setCursor(30, 0);
   hal->display->println("Settings");
 
 
 
-  hal->display->setTextColor(0xFFFF, 0x0000);
+  hal->display->setTextColor(PRIMARY, BGCOLOR);
   hal->display->setCursor(0, 50);
   hal->display->println("[ ] Display");
 
@@ -78,31 +78,31 @@ void Settings::renderMain(TouchEvent event) {
   hal->display->println("[ ] Reset");
 }
 void Settings::renderDisplay(TouchEvent event) {
-  hal->display->setTextColor(0xFFFF, 0x0000);
+  hal->display->setTextColor(PRIMARY, BGCOLOR);
   hal->display->setCursor(0, 50);
   hal->display->println("[ ] Display SETTINGS");
 }
 void Settings::renderBluetooth(TouchEvent event) {
-  hal->display->setTextColor(0xFFFF, 0x0000);
+  hal->display->setTextColor(PRIMARY, BGCOLOR);
   hal->display->setCursor(0, 50);
   hal->display->println("[ ] BLUETOOTH SETTINGS");
 }
 void Settings::renderSensors(TouchEvent event) {
-  hal->display->setTextColor(0xFFFF, 0x0000);
+  hal->display->setTextColor(PRIMARY, BGCOLOR);
   hal->display->setCursor(0, 50);
   hal->display->println("[ ] SENSOR SETTINGS");
 }
 void Settings::renderReset(TouchEvent event) {
-  hal->display->setTextColor(0xFFFF, 0x0000);
+  hal->display->setTextColor(PRIMARY, BGCOLOR);
   hal->display->setCursor(0, 50);
   hal->display->println("[ ] RESET SETTINGS");
  }
 
-bool Settings::inRange(int xmin, int ymin, int xmax, int ymax, int curx, int cury) {
-  if (curx >= xmin &&
-      cury >= ymin &&
-      curx <= xmax &&
-      cury <= ymax ) {
+bool Settings::inRange(int ymin, int xmin, int ymax, int xmax, int curx, int cury) {
+  if (curx > xmin &&
+      cury > ymin &&
+      curx < xmax &&
+      cury < ymax ) {
     return true;
   } else {
     return false;
