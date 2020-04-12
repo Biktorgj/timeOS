@@ -19,6 +19,7 @@
 
 // Languages here
 #include "src/views/clock.h"
+#include "src/views/stopwatch.h"
 #include "src/views/hrm.h"
 #include "src/views/settings.h"
 
@@ -33,10 +34,14 @@ RTCTimerData currentTime;
 HAL hal;
 System sys(&hal);
 Clock clock(&sys, &hal);
+Stopwatch stopwatch(&sys, &hal);
 HeartRate heartrate(&sys, &hal);
 Settings settings(&sys, &hal);
 bool clockBooted = false;
 bool alreadyRefreshing = false;
+uint16_t beginRefresh;
+uint16_t endRefresh;
+
 void startRTC() {
   // Configure RTC
   RTC->TASKS_STOP = 1;
@@ -55,13 +60,10 @@ void startRTC() {
 void setup() {
   hal.init();
 
-  hal.display->setCursor(80,100);
-  hal.display->setTextSize(2);
-  hal.display->setTextColor(BLACK, WHITE);
-  hal.display->println("Hello!");
-  hal.display->fillScreen(WHITE); // Paint it black
+
   sys.resetState();
-  hal.display->fillScreen(BLACK);
+  hal.display->fillScreen(BGCOLOR); // Paint it PRIMARY
+  //hal.display->fillScreen(BGCOLOR);
   // Attach Interrupts
   attachInterrupt(digitalPinToInterrupt(SIDE_BTN_IN), buttonInterrupt, RISING);
   attachInterrupt(digitalPinToInterrupt(TP_INT), touchInterrupt, RISING);
@@ -73,6 +75,7 @@ void setup() {
 void loop() {
   hal.bluetooth->poll();
   hal.forward();
+  handleCurrentView();
   //  clock.route();
   // loopback();
   // spam();
@@ -127,29 +130,43 @@ void touchInterrupt() {
     handleCurrentView();
   }
 }
+
+
 void handleCurrentView() {
   if (sys.isAppChanged() && !alreadyRefreshing) {
+    // dont trip over, signal that a refresh is in progress in case
+    // the rtc attempts to print something else on screen
       alreadyRefreshing = true;
-        hal.display->fillScreen(BLACK);
+        hal.display->fillScreen(BGCOLOR);
         sys.reportAppChanged();
         alreadyRefreshing = false;
   }
   if (sys.getLCDState() && !alreadyRefreshing) {
+    beginRefresh = millis();
     alreadyRefreshing = true;
     switch (sys.getCurrentApp()) {
       case 0:
         clock.route();
         break;
       case 1:
-        heartrate.render();
+        stopwatch.route();
         break;
       case 2:
+        heartrate.render();
+        break;
+      case 3:
         settings.router();
         break;
       default:
       hal.display->println("APP ERR");
       break;
     }
+    endRefresh = millis();
+    hal.display->setCursor(80,200);
+    hal.display->setTextSize(2);
+    hal.display->setTextColor(PRIMARY, BGCOLOR);
+    hal.display->print(endRefresh - beginRefresh);
+    hal.display->print(" ms   ");
     alreadyRefreshing = false;
   }
 
