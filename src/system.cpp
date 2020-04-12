@@ -74,12 +74,6 @@ void System::updateStandbyTime() {
 bool System::getLCDState() {
   return lcd_state;
 }
-void System::resetLCD() {
-  disp->init(240, 240);
-  disp->setRotation(2); // Turn the display around
-  disp->fillScreen(0x0000); // Paint it black
-  // tft.setFont(&FreeSans9pt7b);
-}
 void System::setLCDState(bool state) {
   lcd_state = state;
 }

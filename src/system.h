@@ -42,7 +42,6 @@ class System
     void resetStandbyTime();
     bool getLCDState();
     void setLCDState(bool);
-    void resetLCD();
     void updateStandbyTime(void);
     bool isTimeToSleep();
     void resetState();
@@ -71,7 +70,6 @@ class System
     int hh;
     int mm;
     int ss;
-    Adafruit_ST7789 *disp;
     /*
      *
      *  Power mode:
