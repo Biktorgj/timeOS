@@ -15,6 +15,8 @@ class Clock
     void renderAnalogClock(bool, DateTimeArray);
     void renderBattery(void);
     void renderSteps(void);
+    void drawDigit(int, int, int, uint16_t);
+    void renderDigit(int, int, int, int, uint16_t);
     DateTimeArray prevTime;
     int curPath;
 };

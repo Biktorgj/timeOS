@@ -27,19 +27,43 @@ void Clock::renderClockView(void) {
   DateTimeArray  currentTime = sys->getCurrentTime();
 
    renderDigitalClock(currentTime);
-   renderAnalogClock(true, prevTime);
-   renderAnalogClock(false, currentTime);
+  // renderAnalogClock(true, prevTime);
+   //renderAnalogClock(false, currentTime);
 
    prevTime = currentTime;
    renderSteps();
    renderBattery();
 }
 
-void Clock::renderDigitalClock(DateTimeArray datetime) {
-    hal->display->setTextSize(2);
 
-      hal->display->setCursor(60, 20);
-      hal->display->setTextColor(0xFFFF, 0x0000);
+void Clock::renderDigitalClock(DateTimeArray datetime) {
+  int first_digit = 48;
+  int digit_size = 24;
+  int ypos = 100;
+ // Structure should be 00:00:00 to 23:59:59
+  // First digit Position: 66, others 66 + (20 * X)
+  // position (y): 80
+  // 6 Digits total
+  //Hours
+
+  renderDigit( first_digit, ypos, datetime.hh /10,prevTime.hh/10, PRIMARY);
+  renderDigit( first_digit + (digit_size * 1), ypos, datetime.hh%10,prevTime.hh%10, PRIMARY);
+
+  renderDigit( first_digit + (digit_size * 2), ypos, datetime.ii/10,prevTime.ii/10, PRIMARY);
+  renderDigit( first_digit + (digit_size * 3), ypos, datetime.ii%10,prevTime.ii%10, PRIMARY);
+
+  renderDigit( first_digit + (digit_size * 4), ypos, datetime.ss/10,prevTime.ss/10, PRIMARY);
+  renderDigit( first_digit + (digit_size * 5), ypos, datetime.ss%10,prevTime.ss%10, PRIMARY);
+  // Dots between hours and minutes
+  hal->display->fillRect(first_digit + (digit_size * 2) - 3, ypos+10, 2, 2, PRIMARY);
+  hal->display->fillRect(first_digit + (digit_size * 2) - 3, ypos+26, 2, 2, PRIMARY);
+  // Dots between minutes and seconds
+  hal->display->fillRect(first_digit + (digit_size * 4) - 3, ypos+10, 2, 2, PRIMARY);
+  hal->display->fillRect(first_digit + (digit_size * 4) - 3, ypos+26, 2, 2, PRIMARY);
+   hal->display->setTextSize(2);
+
+      hal->display->setCursor(60, 160);
+      hal->display->setTextColor(BLACK, WHITE);
 
       // Date
       if (datetime.dd < 10) {
@@ -56,7 +80,7 @@ void Clock::renderDigitalClock(DateTimeArray datetime) {
         hal->display->print("000");
       }
       hal->display->println(datetime.yy);
-
+/*
       hal->display->setCursor(70, 205);
 
       // Time
@@ -74,7 +98,7 @@ void Clock::renderDigitalClock(DateTimeArray datetime) {
         hal->display->print("0");
       }
       hal->display->println(datetime.ss);
-      hal->display->setCursor(60, 140);
+      hal->display->setCursor(60, 140);*/
 }
 void Clock::renderAnalogClock(bool inv, DateTimeArray datetime) {
   int z,x2,x3,y2,y3;
@@ -83,7 +107,7 @@ void Clock::renderAnalogClock(bool inv, DateTimeArray datetime) {
   // Size to render: 20 - 180
   // Now draw the clock face
    hal->display->drawCircle(120, 120, 80, WHITE);
-   hal->display->drawCircle(120, 120, 2, 0x00CF);
+   hal->display->drawCircle(120, 120, 2, PRIMARY);
    //
    //hour ticks
    for( int z=0; z < 360;z= z + 30 ){
@@ -133,8 +157,8 @@ void Clock::renderAnalogClock(bool inv, DateTimeArray datetime) {
 void Clock::renderBattery() {
   int batt = hal->power->getBatteryPercentage();
   hal->display->setTextSize(2);
-  hal->display->setCursor(180, 0);
-  hal->display->setTextColor(0x0CF0, 0x0000);
+  hal->display->setCursor(180, 10);
+  hal->display->setTextColor(0x0CF0, WHITE);
   hal->display->print(batt);
   hal->display->print("%");
 }
@@ -142,6 +166,78 @@ void Clock::renderSteps() {
   int steps = 0; // Comes from the HAL, but cant seem to make the accel work
   hal->display->setTextSize(2);
   hal->display->setCursor(0, 220);
-  hal->display->setTextColor(0x0CF0, 0x0000);
+  hal->display->setTextColor(0x0CF0, WHITE);
   hal->display->println("0 Steps");
+}
+
+
+void Clock::renderDigit(int posX, int posY, int digit, int prev_val, uint16_t col){
+  if (digit != prev_val) {
+    drawDigit(posX, posY, prev_val, WHITE);
+  }
+  drawDigit(posX, posY, digit, col);
+
+}
+void Clock::drawDigit(int posX, int posY, int digit, uint16_t col){
+  switch (digit){
+    case 0:
+    hal->display->fillRect(posX, posY, 20, 8, col);
+    hal->display->fillRect(posX, posY, 7, 40, col);
+    hal->display->fillRect(posX+13, posY, 7, 40, col);
+    hal->display->fillRect(posX, posY+32, 20, 8, col);
+    break;
+    case 1:
+    hal->display->fillRect(posX+13, posY, 7, 40, col);
+    break;
+    case 2:
+    hal->display->fillRect(posX, posY, 20, 8, col);
+    hal->display->fillRect(posX, posY+16, 20, 8, col);
+    hal->display->fillRect(posX, posY+24, 7, 8, col);
+    hal->display->fillRect(posX+13, posY, 7, 16, col);
+    hal->display->fillRect(posX, posY+32, 20, 8, col);
+    break;
+    case 3:
+    hal->display->fillRect(posX, posY, 20, 8, col);
+    hal->display->fillRect(posX, posY+16, 20, 8, col);
+    hal->display->fillRect(posX+13, posY, 7, 40, col);
+    hal->display->fillRect(posX, posY+32, 20, 8, col);
+    break;
+    case 4:
+    hal->display->fillRect(posX, posY, 7, 16, col);
+    hal->display->fillRect(posX, posY+16, 20, 8, col);
+    hal->display->fillRect(posX+13, posY, 7, 40, col);
+    break;
+    case 5:
+    hal->display->fillRect(posX, posY, 20, 8, col);
+    hal->display->fillRect(posX, posY+16, 20, 8, col);
+    hal->display->fillRect(posX+13, posY+24, 7, 8, col);
+    hal->display->fillRect(posX, posY, 7, 16, col);
+    hal->display->fillRect(posX, posY+32, 20, 8, col);
+    break;
+    case 6:
+    hal->display->fillRect(posX, posY, 20, 8, col);
+    hal->display->fillRect(posX, posY+16, 20, 8, col);
+    hal->display->fillRect(posX+13, posY+24, 7, 8, col);
+    hal->display->fillRect(posX, posY, 7, 40, col);
+    hal->display->fillRect(posX, posY+32, 20, 8, col);
+    break;
+    case 7:
+    hal->display->fillRect(posX, posY, 20, 8, col);
+    hal->display->fillRect(posX+13, posY, 7, 40, col);
+    break;
+    case 8:
+    hal->display->fillRect(posX, posY, 20, 8, col);
+    hal->display->fillRect(posX, posY, 7, 40, col);
+    hal->display->fillRect(posX, posY+16, 20, 8, col);
+    hal->display->fillRect(posX+13, posY, 7, 40, col);
+    hal->display->fillRect(posX, posY+32, 20, 8, col);
+    break;
+    case 9:
+    hal->display->fillRect(posX, posY, 20, 8, col);
+    hal->display->fillRect(posX, posY, 7, 16, col);
+    hal->display->fillRect(posX, posY+16, 20, 8, col);
+    hal->display->fillRect(posX+13, posY, 7, 40, col);
+    hal->display->fillRect(posX, posY+32, 20, 8, col);
+    break;
+  }
 }
