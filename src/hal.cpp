@@ -25,7 +25,8 @@ void HAL::init() {
   lcd = &Lcd;
   lcd->setBrightness(1);
   display = &tft;
-  display->init(240, 320);
+  display->init(240, 240);
+  display->setSPISpeed(16000000);
   display->setRotation(2); // Turn the display around
   display->fillScreen(WHITE); // Paint it black
   display->setCursor(0,30);
