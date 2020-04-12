@@ -17,14 +17,14 @@ HeartRate::HeartRate(System *System, HAL * Hal) {
 void HeartRate::render() {
   TouchEvent thisEvent = sys->getTouchEvent();
   hal->display->setTextSize(2);
-  hal->display->setTextColor(0x00CF, 0x0000);
+  hal->display->setTextColor(PRIMARY, BGCOLOR);
   hal->display->setCursor(0, 40);
   hal->display->println("Heartrate Monitor");
 
   hal->display->fillRect(0, 200, 240, 240, 0xC000);
   if (!_reading) {
     hal->display->setTextSize(2);
-    hal->display->setTextColor(0xFFFF, 0xC000);
+    hal->display->setTextColor(PRIMARY, BGCOLOR);
     hal->display->setCursor(30, 210);
     hal->display->println("Start reading");
     if (!thisEvent.dispatched && thisEvent.y >= 180) {
@@ -36,7 +36,7 @@ void HeartRate::render() {
     if (millis() - _lastrefresh > 40) {
       _lastrefresh = millis();
       _lastread = hal->hrm->getHR();
-      hal->display->setTextColor(0x00CF, 0x0000);
+      hal->display->setTextColor(PRIMARY, BGCOLOR);
       hal->display->setCursor(40, 140);
       switch (_lastread) {
         case 255:
@@ -58,11 +58,11 @@ void HeartRate::render() {
       }
     }
     hal->display->setTextSize(2);
-    hal->display->setTextColor(0xFFFF, 0xC000);
+    hal->display->setTextColor(PRIMARY, BGCOLOR);
     hal->display->setCursor(30, 210);
     hal->display->println("Stop reading");
     if (!thisEvent.dispatched && thisEvent.y >= 180) {
-      hal->display->setTextColor(0x00CF, 0x0000);
+      hal->display->setTextColor(PRIMARY, BGCOLOR);
       hal->display->setCursor(40, 140);
       hal->display->println("Stopped!       "); // Not enough data to calculate Heartrate please wait
       hal->hrm->disable();
@@ -72,7 +72,7 @@ void HeartRate::render() {
   if (millis() - _last_begin > 60000) {
     hal->hrm->disable();
     _reading = false;
-    hal->display->setTextColor(0xC000, 0x0000);
+    hal->display->setTextColor(SECONDARY, BGCOLOR);
     hal->display->setCursor(40, 140);
     hal->display->println("Timed out!");
   }
