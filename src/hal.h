@@ -9,6 +9,7 @@
 #include <String.h>
 #include <Adafruit_GFX.h>    // Core graphics library
 #include <Adafruit_ST7789.h> // Hardware-specific library for ST7789 (with or without CS pin)
+// SPI Flash
 
 #include "driver/gpio.h"
 #include "driver/lcd.h"
@@ -36,7 +37,6 @@ class HAL
     Power *power;
     HeartRateMonitor *hrm;
     LCD *lcd;
-
   private:
     void setupInterrupt();
 };

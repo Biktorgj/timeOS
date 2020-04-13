@@ -27,13 +27,14 @@ Clone the repository, and install the following libraries:
 * HRS3300 Heart rate monitor: Yes
 * Real Time Clock: Yes
 * Bluetooth: Yes (just started but no work done on it)
+* External SPI Flash: No
 * Power management: Not even tried yet (too soon for that)
 
 ### Software support:
 * Simple clock: Partial (shows time, can't set it)
 * Alarm: No
 * Timer: No
-* Stopwatch: No
+* Stopwatch: Start/Stop (no lap support)
 * Heart rate monitor: Example view (starts, can measure BPMs, doesn't save it, only shows it on screen)
 * Activity tracking: No
 * Settings: Dummy prototype

@@ -12,11 +12,14 @@ Touch Touch;
 Power Power;
 HeartRateMonitor HeartRateMonitor;
 LCD Lcd;
+// Adafruit_FlashTransport_SPI flashTransport(FLASH_CE, &SPI);
+// Adafruit_SPIFlash Flash(&flashTransport);
 
 HAL::HAL() {
   pinMode(SIDE_BTN_OUT, OUTPUT);
   digitalWrite(SIDE_BTN_OUT, HIGH);
   pinMode(SIDE_BTN_IN, INPUT);
+//  pinMode(FLASH_CE, OUTPUT);
   // Setup interrupt and reporting
 }
 #define HWMODE
@@ -44,6 +47,8 @@ void HAL::init() {
   display->println("[HRM]: Ready");
   hrm = &HeartRateMonitor;
 
+//  flash = &Flash;
+
   // custom services and characteristics can be added as well
   bluetooth = &BLESerial;
   bluetooth->setLocalName("pineTime");
@@ -53,6 +58,8 @@ void HAL::init() {
 
   vibra->init();
 
+//  flash->begin();
+//  delay(2000);
 
   hrm->enable();
   hrm->disable();
