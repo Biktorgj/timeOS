@@ -1,10 +1,10 @@
 #include <nrf.h>
 
 /*
- *  RTC0 is used by Softdevice for bluetooth handling
- *  RTC1 is used by the Arduino core for delay()
- *  So we try to use RTC2 as it seems to be free, and it works :)
- */
+*  RTC0 is used by Softdevice for bluetooth handling
+*  RTC1 is used by the Arduino core for delay()
+*  So we try to use RTC2 as it seems to be free, and it works :)
+*/
 #define RTC NRF_RTC2
 #define RTC_IRQ RTC2_IRQn
 
@@ -39,9 +39,11 @@ HeartRate heartrate(&sys, &hal);
 Settings settings(&sys, &hal);
 bool clockBooted = false;
 bool alreadyRefreshing = false;
+
+#ifdef MEAUSARE_FRAMERATE
 uint16_t beginRefresh;
 uint16_t endRefresh;
-
+#endif
 void startRTC() {
   // Configure RTC
   RTC->TASKS_STOP = 1;
@@ -59,7 +61,6 @@ void startRTC() {
 
 void setup() {
   hal.init();
-
 
   sys.resetState();
   hal.display->fillScreen(BGCOLOR); // Paint it PRIMARY
@@ -136,13 +137,15 @@ void handleCurrentView() {
   if (sys.isAppChanged() && !alreadyRefreshing) {
     // dont trip over, signal that a refresh is in progress in case
     // the rtc attempts to print something else on screen
-      alreadyRefreshing = true;
-        hal.display->fillScreen(BGCOLOR);
-        sys.reportAppChanged();
-        alreadyRefreshing = false;
+    alreadyRefreshing = true;
+    hal.display->fillScreen(BGCOLOR);
+    sys.reportAppChanged();
+    alreadyRefreshing = false;
   }
   if (sys.getLCDState() && !alreadyRefreshing) {
-    beginRefresh = millis();
+    #ifdef MEAUSARE_FRAMERATE
+      beginRefresh = millis();
+    #endif
     alreadyRefreshing = true;
     switch (sys.getCurrentApp()) {
       case 0:
@@ -158,15 +161,17 @@ void handleCurrentView() {
         settings.router();
         break;
       default:
-      hal.display->println("APP ERR");
-      break;
+        hal.display->println("APP ERR");
+        break;
     }
-    endRefresh = millis();
-    hal.display->setCursor(80,200);
-    hal.display->setTextSize(2);
-    hal.display->setTextColor(PRIMARY, BGCOLOR);
-    hal.display->print(endRefresh - beginRefresh);
-    hal.display->print(" ms   ");
+    #ifdef MEAUSARE_FRAMERATE
+      endRefresh = millis();
+      hal.display->setCursor(80,180);
+      hal.display->setTextSize(2);
+      hal.display->setTextColor(PRIMARY, BGCOLOR);
+      hal.display->print(endRefresh - beginRefresh);
+      hal.display->print(" ms   ");
+    #endif
     alreadyRefreshing = false;
   }
 
