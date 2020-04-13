@@ -37,7 +37,7 @@ void Stopwatch::route() {
 
   if(!stopWatchActive) stopwatchTimer = millis() - stopwatchMs;
   stopwatchMs = millis()-stopwatchTimer;
-
+  stopWatchTimerUIObj.text = "Stopwatch";
   // hal->display->fillRect(20, 80, 100, 80, 0x0000);
   //2+44
   curdig0 = ((stopwatchMs/60000)/10);

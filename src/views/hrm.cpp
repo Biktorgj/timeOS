@@ -25,11 +25,7 @@ void HeartRate::render() {
   currentTimeUI.front_color = 0x0CC0;
   sys->ui->renderTopLeft(true, currentTimeUI);
   sys->ui->renderTopRight(false, currentTimeUI);
-
-  hal->display->setTextSize(2);
-  hal->display->setTextColor(PRIMARY, BGCOLOR);
-  hal->display->setCursor(0, 40);
-  hal->display->println("HRM");
+  hrmUIObj.text = "HRM";
   if (!_reading) {
     actionButton.front_color = WHITE;
     actionButton.bg_color = PRIMARY;
@@ -40,6 +36,11 @@ void HeartRate::render() {
       hal->hrm->enable();
       _reading = true;
     }
+    hrmUIObj.digit_0 = 0;
+    hrmUIObj.digit_1 = 0;
+    hrmUIObj.front_color = INFO;
+    sys->ui->renderMainBlockNumberInt(false, hrmUIObj);
+
   } else {
     actionButton.front_color = WHITE;
     actionButton.bg_color = DANGER;
@@ -48,8 +49,7 @@ void HeartRate::render() {
     if (millis() - _lastrefresh > 40) {
       _lastrefresh = millis();
       _lastread = hal->hrm->getHR();
-      hal->display->setTextColor(PRIMARY, BGCOLOR);
-      hal->display->setCursor(40, 160);
+
       if (_lastread < 253) {
         hrmUIObj.digit_0 = _lastread / 100;
         hrmUIObj.digit_1 = _lastread % 100;
@@ -62,16 +62,24 @@ void HeartRate::render() {
       sys->ui->renderMainBlockNumberInt(false, hrmUIObj);
       switch (_lastread) {
         case 255:
+        hal->display->setTextColor(PRIMARY, BGCOLOR);
+        hal->display->setCursor(40, 160);
         hal->display->println("Reading...");
         // nothing hrs data gets only every 25 calls answered
         break;
         case 254:
+        hal->display->setTextColor(PRIMARY, BGCOLOR);
+        hal->display->setCursor(40, 160);
         hal->display->println("No pulse"); // Sensor not touched put finger or wrist on it
         break;
         case 253:
+        hal->display->setTextColor(PRIMARY, BGCOLOR);
+        hal->display->setCursor(40, 160);
         hal->display->println("Waiting.."); // Not enough data to calculate Heartrate please wait
         break;
         default:
+        hal->display->setTextColor(PRIMARY, BGCOLOR);
+        hal->display->setCursor(40, 160);
         hal->display->print(_lastread); //Got a heartrate print it to Serial
         hal->display->println(" BPM         "); //Got a heartrate print it to Serial
         hal->hrm->disable();
