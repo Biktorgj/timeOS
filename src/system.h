@@ -60,7 +60,7 @@ class System
     bool isPendingTouchEvent();
     TouchEvent getTouchEvent();
     void notifyTouchEvent(TouchEvent);
-    void notifyClockTchange(int, int, int);
+    void notifyClockChange(int, int, int);
     UI *ui;
   private:
     HAL *hal;

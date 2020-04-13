@@ -19,7 +19,7 @@ System::System(HAL *Hal) {
   Ui.attHal(Hal);
   ui = &Ui;
 }
-void System::notifyClockTchange(int hh, int mm, int ss) {
+void System::notifyClockChange(int hh, int mm, int ss) {
   timestorage.hh = hh;
   timestorage.ii = mm;
   timestorage.ss = ss;

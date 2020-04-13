@@ -45,7 +45,7 @@
 #define TFT_BL_HI 23
 #define TFT_DETECT 9 // Input
 
-
+#define FLASH_CE 5
 
 
 
