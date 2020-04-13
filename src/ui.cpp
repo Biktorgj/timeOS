@@ -91,6 +91,9 @@ void UI::renderMainBlockNumbers(bool def, UIObject newobj) {
   int first_digit = 48;
   int digit_size = 24;
   int ypos = 100;
+  hal->display->setCursor(30, 80);
+  hal->display->setTextColor(newobj.front_color);
+  hal->display->print(newobj.text);
   renderDigit( first_digit, ypos, newobj.digit_0/10,prevMainBlockNumber.digit_0/10, newobj.front_color);
   renderDigit( first_digit + (digit_size * 1), ypos, newobj.digit_0%10,prevMainBlockNumber.digit_0%10, newobj.front_color);
 
@@ -112,6 +115,9 @@ void UI::renderMainBlockNumberInt(bool def, UIObject newobj) {
   int first_digit = 48;
   int digit_size = 24;
   int ypos = 100;
+  hal->display->setCursor(30, 80);
+  hal->display->setTextColor(newobj.front_color);
+  hal->display->print(newobj.text);
   renderDigit( first_digit + (digit_size * 1), ypos, newobj.digit_0%10,prevMainBlockNumber.digit_0%10, newobj.front_color);
   renderDigit( first_digit + (digit_size * 2), ypos, newobj.digit_1/10, prevMainBlockNumber.digit_1/10, newobj.front_color);
   renderDigit( first_digit + (digit_size * 3), ypos, newobj.digit_1%10, prevMainBlockNumber.digit_1%10, newobj.front_color);
