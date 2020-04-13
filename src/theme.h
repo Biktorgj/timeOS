@@ -6,6 +6,7 @@
 #define BGCOLOR 0xFFFF
 #define ACCENT 0xF800
 
+#define INFO 0x00C0
 #define SUCCESS 0x07E0
 #define WARNING 0xFF00
 #define DANGER 0xF000
