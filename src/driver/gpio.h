@@ -10,6 +10,7 @@
 /* Battery and charger */
 #define BATT_VCC 31
 #define BATT_CHG 12
+#define EXT_POWER 19
 
 /* Side Key */
 #define SIDE_BTN_IN 13 // input
