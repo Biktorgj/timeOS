@@ -99,7 +99,7 @@ void HeartRate::render() {
     hal->hrm->disable();
     _reading = false;
     hal->display->setTextColor(SECONDARY, BGCOLOR);
-    hal->display->setCursor(40, 140);
+    hal->display->setCursor(40, 160);
     hal->display->println("Timed out!");
   }
 }
