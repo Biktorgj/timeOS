@@ -9,8 +9,6 @@ Clock::Clock(System *System, HAL * Hal) {
   curPath = 0; // Default path is 0 (show clock), 1 would be watchface select
   sys = System;
   hal = Hal;
-  prevTime = sys->getCurrentTime();
-
 }
 
 void Clock::route() {
@@ -26,13 +24,19 @@ void Clock::route() {
 void Clock::renderClockView(void) {
   DateTimeArray  currentTime = sys->getCurrentTime();
 
-   renderDigitalClock(currentTime);
+//   renderDigitalClock(currentTime);
   // renderAnalogClock(true, prevTime);
    //renderAnalogClock(false, currentTime);
-
-   prevTime = currentTime;
+   UIObject currentTimeUI;
+   currentTimeUI.digit_0 = currentTime.hh;
+   currentTimeUI.digit_1 = currentTime.ii;
+   currentTimeUI.digit_2 = currentTime.ss;
+   currentTimeUI.front_color = 0x0CC0;
+   sys->ui->renderTopLeft(true, currentTimeUI);
+   sys->ui->renderTopRight(true, currentTimeUI);
+   sys->ui->renderMainBlockNumbers(true, currentTimeUI);
    renderSteps();
-   renderBattery();
+//   renderBattery();
 }
 
 
@@ -40,26 +44,13 @@ void Clock::renderDigitalClock(DateTimeArray datetime) {
   int first_digit = 48;
   int digit_size = 24;
   int ypos = 100;
+  UIObject currentTime;
  // Structure should be 00:00:00 to 23:59:59
   // First digit Position: 66, others 66 + (20 * X)
   // position (y): 80
   // 6 Digits total
   //Hours
 
-  renderDigit( first_digit, ypos, datetime.hh /10,prevTime.hh/10, PRIMARY);
-  renderDigit( first_digit + (digit_size * 1), ypos, datetime.hh%10,prevTime.hh%10, PRIMARY);
-
-  renderDigit( first_digit + (digit_size * 2), ypos, datetime.ii/10,prevTime.ii/10, PRIMARY);
-  renderDigit( first_digit + (digit_size * 3), ypos, datetime.ii%10,prevTime.ii%10, PRIMARY);
-
-  renderDigit( first_digit + (digit_size * 4), ypos, datetime.ss/10,prevTime.ss/10, PRIMARY);
-  renderDigit( first_digit + (digit_size * 5), ypos, datetime.ss%10,prevTime.ss%10, PRIMARY);
-  // Dots between hours and minutes
-  hal->display->fillRect(first_digit + (digit_size * 2) - 3, ypos+10, 2, 2, PRIMARY);
-  hal->display->fillRect(first_digit + (digit_size * 2) - 3, ypos+26, 2, 2, PRIMARY);
-  // Dots between minutes and seconds
-  hal->display->fillRect(first_digit + (digit_size * 4) - 3, ypos+10, 2, 2, PRIMARY);
-  hal->display->fillRect(first_digit + (digit_size * 4) - 3, ypos+26, 2, 2, PRIMARY);
    hal->display->setTextSize(2);
 
       hal->display->setCursor(60, 160);

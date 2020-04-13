@@ -15,6 +15,17 @@ Stopwatch::Stopwatch(System *System, HAL * Hal) {
 
 void Stopwatch::route() {
   TouchEvent thisEvent = sys->getTouchEvent();
+
+  UIObject currentTimeUI;
+  UIObject stopWatchTimerUIObj;
+
+  DateTimeArray  currentTime = sys->getCurrentTime();
+  currentTimeUI.digit_0 = currentTime.hh;
+  currentTimeUI.digit_1 = currentTime.ii;
+  currentTimeUI.digit_2 = currentTime.ss;
+  currentTimeUI.front_color = 0x0CC0;
+  sys->ui->renderTopLeft(true, currentTimeUI);
+  sys->ui->renderTopRight(false, currentTimeUI);
   if (!thisEvent.dispatched) {
     stopWatchActive = !stopWatchActive;
   }
@@ -30,37 +41,16 @@ void Stopwatch::route() {
   // hal->display->fillRect(20, 80, 100, 80, 0x0000);
   //2+44
   curdig0 = ((stopwatchMs/60000)/10);
-  curdig1 = ((stopwatchMs/60000)%10);
-  curdig2 = (stopwatchMs/1000%60)/10;
-  curdig3 =  (stopwatchMs/1000%60)%10;
-  if (curdig0 != prevdig0) {
-    drawDigit( 66, 80, prevdig0, WHITE);
+  stopWatchTimerUIObj.digit_0 = (stopwatchMs/60000);
+  stopWatchTimerUIObj.digit_1 = (stopwatchMs/1000%60);
+  stopWatchTimerUIObj.digit_2 = stopwatchMs%100;
+  if (stopWatchActive) {
+    stopWatchTimerUIObj.front_color = RED;
+  } else {
+    stopWatchTimerUIObj.front_color = PRIMARY;
   }
-  drawDigit( 66, 80, curdig0, PRIMARY);
-  if (curdig1 != prevdig1) {
-    drawDigit(88, 80, prevdig1, WHITE);
-  }
-  drawDigit(88, 80, curdig1, PRIMARY);
-  if (curdig2 != prevdig2) {
-    drawDigit(116, 80, prevdig2, WHITE);
-  }
-  drawDigit(116, 80, curdig2, PRIMARY);
-  if (curdig3 != prevdig3) {
-    drawDigit(138, 80, prevdig3, WHITE);
-  }
-  drawDigit(138, 80, curdig3, PRIMARY);
-  prevdig0 = ((stopwatchMs/60000)/10);
-  prevdig1 = ((stopwatchMs/60000)%10);
-  prevdig2 = (stopwatchMs/1000%60)/10;
-  prevdig3 =  (stopwatchMs/1000%60)%10;
-  hal->display->setCursor(118, 130);
-  hal->display->setTextColor(BLACK, WHITE);
-  hal->display->setTextSize(2);
-  if(stopwatchMs%1000 < 10) hal->display->print(0);
-  if(stopwatchMs%1000 < 100) hal->display->print(0);
-  hal->display->print(stopwatchMs%1000); hal->display->print("ms");
-  hal->display->fillRect(110, 90, 4, 4, PRIMARY);
-  hal->display->fillRect(110, 106, 4, 4, PRIMARY);
+  sys->ui->renderMainBlockNumbers(true, stopWatchTimerUIObj);
+
   /*
   if(buttonMid.wasPressed()){
   stopwatchActive = false;

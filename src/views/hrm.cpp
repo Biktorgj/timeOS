@@ -16,28 +16,50 @@ HeartRate::HeartRate(System *System, HAL * Hal) {
 
 void HeartRate::render() {
   TouchEvent thisEvent = sys->getTouchEvent();
+
+  UIObject currentTimeUI, actionButton, hrmUIObj;
+  DateTimeArray  currentTime = sys->getCurrentTime();
+  currentTimeUI.digit_0 = currentTime.hh;
+  currentTimeUI.digit_1 = currentTime.ii;
+  currentTimeUI.digit_2 = currentTime.ss;
+  currentTimeUI.front_color = 0x0CC0;
+  sys->ui->renderTopLeft(true, currentTimeUI);
+  sys->ui->renderTopRight(false, currentTimeUI);
+
   hal->display->setTextSize(2);
   hal->display->setTextColor(PRIMARY, BGCOLOR);
   hal->display->setCursor(0, 40);
-  hal->display->println("Heartrate Monitor");
-
-  hal->display->fillRect(0, 200, 240, 240, 0xC000);
+  hal->display->println("HRM");
   if (!_reading) {
-    hal->display->setTextSize(2);
-    hal->display->setTextColor(PRIMARY, BGCOLOR);
-    hal->display->setCursor(30, 210);
-    hal->display->println("Start reading");
+    actionButton.front_color = WHITE;
+    actionButton.bg_color = PRIMARY;
+    actionButton.text = "START";
+    sys->ui->renderBottomFullButton(true, actionButton);
     if (!thisEvent.dispatched && thisEvent.y >= 180) {
       _last_begin = millis();
       hal->hrm->enable();
       _reading = true;
     }
   } else {
+    actionButton.front_color = WHITE;
+    actionButton.bg_color = DANGER;
+    actionButton.text = "STOP";
+    sys->ui->renderBottomFullButton(true, actionButton);
     if (millis() - _lastrefresh > 40) {
       _lastrefresh = millis();
       _lastread = hal->hrm->getHR();
       hal->display->setTextColor(PRIMARY, BGCOLOR);
-      hal->display->setCursor(40, 140);
+      hal->display->setCursor(40, 160);
+      if (_lastread < 253) {
+        hrmUIObj.digit_0 = _lastread / 100;
+        hrmUIObj.digit_1 = _lastread % 100;
+        hrmUIObj.front_color = SUCCESS;
+      } else {
+        hrmUIObj.digit_0 = 0;
+        hrmUIObj.digit_1 = 0;
+        hrmUIObj.front_color = WARNING;
+      }
+      sys->ui->renderMainBlockNumberInt(false, hrmUIObj);
       switch (_lastread) {
         case 255:
         hal->display->println("Reading...");
@@ -51,16 +73,12 @@ void HeartRate::render() {
         break;
         default:
         hal->display->print(_lastread); //Got a heartrate print it to Serial
-        hal->display->println(" BPM"); //Got a heartrate print it to Serial
+        hal->display->println(" BPM         "); //Got a heartrate print it to Serial
         hal->hrm->disable();
         _reading = false;
         break;
       }
     }
-    hal->display->setTextSize(2);
-    hal->display->setTextColor(PRIMARY, BGCOLOR);
-    hal->display->setCursor(30, 210);
-    hal->display->println("Stop reading");
     if (!thisEvent.dispatched && thisEvent.y >= 180) {
       hal->display->setTextColor(PRIMARY, BGCOLOR);
       hal->display->setCursor(40, 140);
