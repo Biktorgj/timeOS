@@ -4,8 +4,8 @@
 
 #include "Arduino.h"
 #include "system.h"
-// #include "../driver/rtc.h"
 
+UI Ui;
 
 typedef struct rtctimerdata {
   int hh;
@@ -16,6 +16,8 @@ rtctimerdata curtime;
 
 System::System(HAL *Hal) {
   hal = Hal;
+  Ui.attHal(Hal);
+  ui = &Ui;
 }
 void System::notifyClockTchange(int hh, int mm, int ss) {
   timestorage.hh = hh;
@@ -33,6 +35,8 @@ uint8_t System::getPreviousApp() {
 }
 void System::reportAppChanged() {
   previous_app = current_app;
+  ui->restoreObjects();
+
 }
 bool System::isAppChanged() {
   if (previous_app == current_app) {
@@ -91,16 +95,13 @@ void System::resetState() {
   previous_app = 0;
   current_app = 0;
   available_apps = 4;
-  hh = 0;
-  mm = 0;
-  ss = 0;
   lcd_state = true;
 
   timestorage.hh = 0;
   timestorage.ii = 0;
   timestorage.ss = 0;
-  timestorage.dd = 0;
-  timestorage.mm = 0;
-  timestorage.yy = 0;
+  timestorage.dd = 1;
+  timestorage.mm = 1;
+  timestorage.yy = 1970;
   lcd_standby_seconds = 20;
 }

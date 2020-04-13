@@ -8,11 +8,20 @@
  #ifndef _SYSTEMCL_
  #define _SYSTEMCL_
  #include "hal.h"
+ #include "ui.h"
 
 struct DateTimeArray {
   uint8_t dd;
   uint8_t mm;
-  uint8_t yy;
+  uint16_t yy;
+  uint8_t hh;
+  uint8_t ii;
+  uint8_t ss;
+};
+
+struct Alarm {
+  bool repeat[7];
+  bool enable;
   uint8_t hh;
   uint8_t ii;
   uint8_t ss;
@@ -52,6 +61,7 @@ class System
     TouchEvent getTouchEvent();
     void notifyTouchEvent(TouchEvent);
     void notifyClockTchange(int, int, int);
+    UI *ui;
   private:
     HAL *hal;
     bool hal_ready;
@@ -67,9 +77,8 @@ class System
     unsigned int lcd_standby_seconds;
     DateTimeArray timestorage;
     TouchEvent touch_event;
-    int hh;
-    int mm;
-    int ss;
+    Alarm alarms[5];
+
     /*
      *
      *  Power mode:
