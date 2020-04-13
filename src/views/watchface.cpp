@@ -3,30 +3,30 @@
 */
 
 #include "Arduino.h"
-#include "clock.h"
+#include "watchface.h"
 #include "../theme.h"
-Clock::Clock(System *System, HAL * Hal) {
+WatchFace::WatchFace(System *System, HAL * Hal) {
   curPath = 0; // Default path is 0 (show clock), 1 would be watchface select
   sys = System;
   hal = Hal;
 }
 
-void Clock::route() {
+void WatchFace::route() {
   switch (curPath) {
     case 0:
-      renderClockView();
+      renderWatchFaceView();
       break;
     default:
       break;
   }
 }
 
-void Clock::renderClockView(void) {
+void WatchFace::renderWatchFaceView(void) {
   DateTimeArray  currentTime = sys->getCurrentTime();
 
-//   renderDigitalClock(currentTime);
-  // renderAnalogClock(true, prevTime);
-   //renderAnalogClock(false, currentTime);
+//   renderDigitalWatchFace(currentTime);
+  // renderAnalogWatchFace(true, prevTime);
+   //renderAnalogWatchFace(false, currentTime);
    UIObject currentTimeUI;
    currentTimeUI.digit_0 = currentTime.hh;
    currentTimeUI.digit_1 = currentTime.ii;
@@ -40,7 +40,7 @@ void Clock::renderClockView(void) {
 }
 
 
-void Clock::renderDigitalClock(DateTimeArray datetime) {
+void WatchFace::renderDigitalWatchFace(DateTimeArray datetime) {
   int first_digit = 48;
   int digit_size = 24;
   int ypos = 100;
@@ -91,7 +91,7 @@ void Clock::renderDigitalClock(DateTimeArray datetime) {
       hal->display->println(datetime.ss);
       hal->display->setCursor(60, 140);*/
 }
-void Clock::renderAnalogClock(bool inv, DateTimeArray datetime) {
+void WatchFace::renderAnalogWatchFace(bool inv, DateTimeArray datetime) {
   int z,x2,x3,y2,y3;
   float angle;
   // Size total: 240, 240,
@@ -145,7 +145,7 @@ void Clock::renderAnalogClock(bool inv, DateTimeArray datetime) {
    }
   //
 }
-void Clock::renderBattery() {
+void WatchFace::renderBattery() {
   int batt = hal->power->getBatteryPercentage();
   hal->display->setTextSize(2);
   hal->display->setCursor(180, 10);
@@ -153,7 +153,7 @@ void Clock::renderBattery() {
   hal->display->print(batt);
   hal->display->print("%");
 }
-void Clock::renderSteps() {
+void WatchFace::renderSteps() {
   int steps = 0; // Comes from the HAL, but cant seem to make the accel work
   hal->display->setTextSize(2);
   hal->display->setCursor(0, 220);
@@ -162,14 +162,14 @@ void Clock::renderSteps() {
 }
 
 
-void Clock::renderDigit(int posX, int posY, int digit, int prev_val, uint16_t col){
+void WatchFace::renderDigit(int posX, int posY, int digit, int prev_val, uint16_t col){
   if (digit != prev_val) {
     drawDigit(posX, posY, prev_val, WHITE);
   }
   drawDigit(posX, posY, digit, col);
 
 }
-void Clock::drawDigit(int posX, int posY, int digit, uint16_t col){
+void WatchFace::drawDigit(int posX, int posY, int digit, uint16_t col){
   switch (digit){
     case 0:
     hal->display->fillRect(posX, posY, 20, 8, col);
