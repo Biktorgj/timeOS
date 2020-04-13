@@ -18,7 +18,7 @@
 #include "src/theme.h"
 
 // Languages here
-#include "src/views/clock.h"
+#include "src/views/watchface.h"
 #include "src/views/stopwatch.h"
 #include "src/views/hrm.h"
 #include "src/views/settings.h"
@@ -33,7 +33,7 @@ RTCTimerData currentTime;
 
 HAL hal;
 System sys(&hal);
-Clock clock(&sys, &hal);
+WatchFace watchface(&sys, &hal);
 Stopwatch stopwatch(&sys, &hal);
 HeartRate heartrate(&sys, &hal);
 Settings settings(&sys, &hal);
@@ -77,7 +77,7 @@ void loop() {
   hal.bluetooth->poll();
   hal.forward();
   handleCurrentView();
-  //  clock.route();
+  //  watchface.route();
   // loopback();
   // spam();
   if (sys.isTimeToSleep()) {
@@ -149,7 +149,7 @@ void handleCurrentView() {
     alreadyRefreshing = true;
     switch (sys.getCurrentApp()) {
       case 0:
-        clock.route();
+        watchface.route();
         break;
       case 1:
         stopwatch.route();
@@ -182,7 +182,7 @@ void handleCurrentView() {
   }
 }
 void rtcTick() {
-  sys.notifyClockTchange(currentTime.hh, currentTime.mm, currentTime.ss);
+  sys.notifyClockChange(currentTime.hh, currentTime.mm, currentTime.ss);
   if (clockBooted) {
     handleCurrentView();
   }
