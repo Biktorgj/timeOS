@@ -12,6 +12,7 @@ Touch Touch;
 Power Power;
 HeartRateMonitor HeartRateMonitor;
 LCD Lcd;
+
 // Adafruit_FlashTransport_SPI flashTransport(FLASH_CE, &SPI);
 // Adafruit_SPIFlash Flash(&flashTransport);
 
@@ -25,6 +26,7 @@ HAL::HAL() {
 #define HWMODE
 
 void HAL::init() {
+  uint16_t bmares;
   lcd = &Lcd;
   lcd->setBrightness(1);
   display = &tft;
@@ -55,7 +57,6 @@ void HAL::init() {
 
   Serial.begin(115200);
   bluetooth->begin();
-
   vibra->init();
 
 //  flash->begin();
@@ -63,6 +64,21 @@ void HAL::init() {
 
   hrm->enable();
   hrm->disable();
+
+  bmares = bma421.initialize();
+  bma421.stepCounterEnable();
+  bma421.getAcceleration(&accelData.x, &accelData.y, &accelData.z);
+  display->print("BMA RES ");
+  display->println(bmares);
+
+  accelData.temp = bma421.getTemperature();
+  delay(1000);
+}
+void HAL::updateAccel() {
+
+  bma421.getAcceleration(&accelData.x, &accelData.y, &accelData.z);
+  accelData.temp = bma421.getTemperature();
+  accelData.steps = bma421.getStepCounterOutput();
 }
 
 void HAL::pollBLE() {

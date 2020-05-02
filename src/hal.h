@@ -19,7 +19,17 @@
 #include "driver/touch.h"
 #include "driver/key.h"
 #include "driver/hrm.h"
+#include "driver/arduino_bma421.h"
 
+
+struct AccelRaw {
+  float x;
+  float y;
+  float z;
+  uint32_t temp;
+  uint32_t steps;
+
+};
 class HAL
 {
   public:
@@ -28,7 +38,9 @@ class HAL
     void forward();
     void pollBLE();
     void loopback();
+    void updateAccel();
     void spam();
+    AccelRaw accelData;
     Vibra *vibra;
     Adafruit_ST7789 *display;
     BLESerial *bluetooth;
