@@ -1,5 +1,5 @@
 # timeOS
-Arduino based firmware for the Pinetime watch from Pine64
+Arduino based firmware for the Pinetime watch from Pine64. This code aims to be a demo, just a proof of concept
 
 ## intro
 There are already various operating systems in development stage for the Pinetime, but I couldn't find something that was straightforward to understand, and to develop for. Since the PineTime's CPU is already supported in Arduino, I've put toghether a bunch of code to hopefully show the capabilities of the watch.
