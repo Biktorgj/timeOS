@@ -28,7 +28,7 @@ void UI::renderTopLeft(bool def, UIObject newobj) {
   if (!def) {
     hal->display->fillRect(0, 0, 110, 40, newobj.bg_color);
   } else {
-    hal->display->fillRect(0, 0, 110, 40, WHITE);
+    hal->display->fillRect(0, 0, 110, 40, newobj.bg_color);
   }
   hal->display->setCursor(10, 10);
   hal->display->setTextColor(BLUE, BGCOLOR);
@@ -160,7 +160,7 @@ UIObject UI::resetObject(UIObject object) {
 
 void UI::renderDigit(int posX, int posY, int digit, int prev_val, uint16_t col){
   if (digit != prev_val) {
-    drawDigit(posX, posY, prev_val, WHITE);
+    drawDigit(posX, posY, prev_val, BGCOLOR);
   }
   drawDigit(posX, posY, digit, col);
 

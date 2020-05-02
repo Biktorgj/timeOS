@@ -1,9 +1,9 @@
 #ifndef _THEME_
 #define _THEME_
 
-#define PRIMARY 0x00CF
+#define PRIMARY 0xFFFF
 #define SECONDARY 0xF000
-#define BGCOLOR 0xFFFF
+#define BGCOLOR 0x0000
 #define ACCENT 0xF800
 
 #define INFO 0x00C0

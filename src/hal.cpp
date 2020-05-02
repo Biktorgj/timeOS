@@ -31,10 +31,10 @@ void HAL::init() {
   display->init(240, 240);
   display->setSPISpeed(16000000);
   display->setRotation(2); // Turn the display around
-  display->fillScreen(WHITE); // Paint it black
+  display->fillScreen(BGCOLOR); // Paint it black
   display->setCursor(0,30);
   display->setTextSize(2);
-  display->setTextColor(BLACK, WHITE);
+  display->setTextColor(PRIMARY, BGCOLOR);
   display->println("Hi!");
   display->println("[VIB]: Ready");
   vibra = &Vibrator;

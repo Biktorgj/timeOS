@@ -8,14 +8,9 @@
 #define RTC NRF_RTC2
 #define RTC_IRQ RTC2_IRQn
 
-
-// Include the HAL
-#include "src/hal.h"
-
-// Include system
-#include "src/system.h"
-// Include the base theme
-#include "src/theme.h"
+#include "src/hal.h" // Include the HAL
+#include "src/system.h" // Include system
+#include "src/theme.h" // Include the base theme
 
 // Languages here
 #include "src/views/watchface.h"
@@ -64,8 +59,6 @@ void setup() {
 
   sys.resetState();
   hal.display->fillScreen(BGCOLOR); // Paint it PRIMARY
-  //hal.display->fillScreen(BGCOLOR);
-  // Attach Interrupts
   attachInterrupt(digitalPinToInterrupt(SIDE_BTN_IN), buttonInterrupt, RISING);
   attachInterrupt(digitalPinToInterrupt(TP_INT), touchInterrupt, RISING);
   clockBooted = true;

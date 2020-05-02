@@ -149,7 +149,7 @@ void WatchFace::renderBattery() {
   int batt = hal->power->getBatteryPercentage();
   hal->display->setTextSize(2);
   hal->display->setCursor(180, 10);
-  hal->display->setTextColor(0x0CF0, WHITE);
+  hal->display->setTextColor(PRIMARY, BGCOLOR);
   hal->display->print(batt);
   hal->display->print("%");
 }
@@ -157,14 +157,14 @@ void WatchFace::renderSteps() {
   int steps = 0; // Comes from the HAL, but cant seem to make the accel work
   hal->display->setTextSize(2);
   hal->display->setCursor(0, 220);
-  hal->display->setTextColor(0x0CF0, WHITE);
+  hal->display->setTextColor(PRIMARY, BGCOLOR);
   hal->display->println("0 Steps");
 }
 
 
 void WatchFace::renderDigit(int posX, int posY, int digit, int prev_val, uint16_t col){
   if (digit != prev_val) {
-    drawDigit(posX, posY, prev_val, WHITE);
+    drawDigit(posX, posY, prev_val, BGCOLOR);
   }
   drawDigit(posX, posY, digit, col);
 
