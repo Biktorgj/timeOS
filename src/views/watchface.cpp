@@ -154,11 +154,20 @@ void WatchFace::renderBattery() {
   hal->display->print("%");
 }
 void WatchFace::renderSteps() {
-  int steps = 0; // Comes from the HAL, but cant seem to make the accel work
+  hal->updateAccel();
   hal->display->setTextSize(2);
   hal->display->setCursor(0, 220);
   hal->display->setTextColor(PRIMARY, BGCOLOR);
-  hal->display->println("0 Steps");
+  /*hal->display->print(hal->accelData.x);
+  hal->display->print(" ");
+  hal->display->print(hal->accelData.y);
+  hal->display->print(" ");
+  hal->display->print(hal->accelData.z);
+  hal->display->print(" ");*/
+  hal->display->print(hal->accelData.temp);
+  hal->display->print(" C ");
+  hal->display->print(hal->accelData.steps);
+  hal->display->println(" Steps");
 }
 
 
